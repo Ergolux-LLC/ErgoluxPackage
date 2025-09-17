@@ -1,0 +1,100 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.swo
+*.bak
+*.old
+*.orig
+*.rej
+*.sublime-workspace
+*.sublime-project
+*.vscode/
+.idea/
+.env
+.env.*
+node_modules/
+coverage/
+dist/
+build/
+.cache/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+*.egg
+*.sqlite3
+*.db
+*.sqlite
+*.pid
+*.seed
+*.pid.lock
+*.lock
+*.log.*
+
+# Python
+venv/
+ENV/
+.envrc
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.pytest_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+
+# SvelteKit/Node
+.svelte-kit/
+.svelte/
+.svelte-check-cache/
+
+# Go
+bin/
+*.exe
+*.test
+*.out
+*.a
+*.o
+*.so
+*.dll
+*.dylib
+*.mod
+*.sum
+vendor/
+
+# Docker
+**/docker-compose.override.yml
+**/.docker/
+
+# OS
+Icon?
+
+# Misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Bruno
+bruno.json
+
+# Local dev
+local.env
+
+# JetBrains
+*.iml
+.idea/
+
+# Test output
+junit.xml
+
+# VSCode
+.history/
+
+# Custom
+# Add more patterns as needed
