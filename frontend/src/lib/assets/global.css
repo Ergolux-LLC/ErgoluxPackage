@@ -1,0 +1,88 @@
+/* Global dark mode styles */
+html, body {
+  background-color: #121212;
+  color: #e0e0e0;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* DialogEngine component overrides for dark mode */
+:global(.dialog-engine), :global(.dialog-step) {
+  background-color: #121212 !important;
+  color: #e0e0e0 !important;
+}
+
+:global(h1) {
+  color: #4f8cff !important;
+}
+
+:global(.subtitle) {
+  color: #b3e5fc !important;
+}
+
+:global(label) {
+  color: #f3f3f3 !important;
+}
+
+:global(input) {
+  background: #23272b !important;
+  color: #f3f3f3 !important;
+  border: 1px solid #444 !important;
+}
+
+:global(.primary-btn) {
+  background: #4f8cff !important;
+  color: #fff !important;
+}
+
+/* Setup page specific styles */
+:global(.setup-container) {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+:global(.setup-complete) {
+  background: #222;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+:global(.json-container) {
+  background: #333;
+  border-radius: 4px;
+  padding: 1rem;
+  margin: 1rem 0;
+  overflow: auto;
+  max-height: 300px;
+}
+
+:global(pre) {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: monospace;
+  color: #e0e0e0;
+}
+
+:global(.action-buttons) {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+:global(button.primary) {
+  background: #3066be;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+:global(button.primary:hover) {
+  background: #254b93;
+}

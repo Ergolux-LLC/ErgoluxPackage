@@ -1,0 +1,150 @@
+/* Setup page styles - Dark Mode */
+
+/* Global dark mode overrides */
+:global(body) {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+:global(html) {
+  background-color: #121212;
+}
+
+/* Main container */
+.setup-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: #e0e0e0;
+}
+
+/* Dialog overrides for dark mode - matching the actual class names */
+:global(.dialog-engine),
+:global(.dialog-step) {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+:global(h1) {
+  color: #4f8cff !important;
+}
+
+:global(.subtitle) {
+  color: #b3e5fc !important;
+}
+
+:global(label) {
+  color: #f3f3f3 !important;
+}
+
+:global(input) {
+  background: #23272b !important;
+  color: #f3f3f3 !important;
+  border: 1px solid #444 !important;
+}
+
+:global(.primary-btn) {
+  background: #4f8cff !important;
+  color: #fff !important;
+}
+
+:global(.dialog-form input:focus),
+:global(.dialog-form textarea:focus),
+:global(.dialog-form select:focus) {
+  border-color: #3066be;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(48, 102, 190, 0.3);
+}
+
+:global(.dialog-help-text) {
+  color: #b0b0b0;
+}
+
+:global(.dialog-button) {
+  background-color: #3066be;
+}
+
+:global(.dialog-button:hover) {
+  background-color: #254b93;
+}
+
+:global(.info-box) {
+  background-color: #2a2a2a;
+  border-left: 4px solid #3066be;
+}
+
+:global(.info-header) {
+  color: #e0e0e0;
+}
+
+:global(.success) {
+  border-left-color: #4caf50;
+}
+
+:global(.error-message) {
+  color: #ff6b6b;
+}
+
+/* Setup complete screen */
+.setup-complete {
+  background: #222;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  color: #e0e0e0;
+}
+
+.setup-complete h2 {
+  color: #ffffff;
+  margin-bottom: 1rem;
+}
+
+.setup-complete p {
+  color: #e0e0e0;
+  margin-bottom: 1rem;
+}
+
+.json-container {
+  background: #333;
+  border-radius: 4px;
+  padding: 1rem;
+  margin: 1rem 0;
+  overflow: auto;
+  max-height: 300px;
+  color: #e0e0e0;
+  border: 1px solid #444;
+}
+
+pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: monospace;
+  color: #e0e0e0;
+}
+
+/* Button styles */
+.action-buttons {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+button.primary {
+  background: #3066be;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button.primary:hover {
+  background: #254b93;
+}
+
+button.primary:active {
+  background: #1a3667;
+}
