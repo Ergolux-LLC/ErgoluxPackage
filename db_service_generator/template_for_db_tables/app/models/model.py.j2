@@ -1,0 +1,44 @@
+from .base import Base
+from sqlalchemy import Column, DateTime, func, String, Integer, Float, Boolean
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+import uuid
+
+
+class {{ table_name|capitalize }}(Base):
+    __tablename__ = "{{ table_name }}"
+    {% if table_name == 'workspace' %}
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), nullable=True)
+    created_by = Column(PG_UUID(as_uuid=True), nullable=False)
+    owner_id = Column(PG_UUID(as_uuid=True), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
+
+    @property
+    def obfuscated_id(self):
+        from app.utils.obfuscate import obfuscate_id
+        return obfuscate_id(self.id)
+    {% else %}
+    {% for field in fields %}
+    {{ field.name }} = Column(
+        {% if field.sqlalchemy_type == "UUID" %}
+            PG_UUID(as_uuid=True),
+            primary_key={{ field.primary_key|default(False) }},
+            default=uuid.uuid4 if {{ field.primary_key|default(False) }} else None,
+            nullable={{ not field.required|default(False) }}
+        {% elif field.sqlalchemy_type == "DateTime" and field.name == "created_at" %}
+            DateTime(timezone=True),
+            nullable={{ not field.required|default(False) }},
+            server_default=func.now()
+        {% elif field.name == "name" and table_name == "workspace" %}
+            String,
+            nullable={{ not field.required|default(False) }},
+            unique=True
+        {% else %}
+            {{ field.sqlalchemy_type }},
+            nullable={{ not field.required|default(False) }}
+        {% endif %}
+    )
+    {% endfor %}
+    {% endif %}

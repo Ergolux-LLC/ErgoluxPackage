@@ -1,0 +1,21 @@
+meta {
+  name: Update
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8006/00000000-0000-0000-0000-000000000001
+  body: json
+  auth: inherit
+}
+
+body:json {
+{
+  "workspace_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa_updated",
+  "role": "test_role",
+  "joined_at": "2025-09-16T02:35:34.110799+00:00",
+  "is_active": "unknown_is_active",
+  "created_by": "00000000-0000-0000-0000-000000000001"
+}
+}

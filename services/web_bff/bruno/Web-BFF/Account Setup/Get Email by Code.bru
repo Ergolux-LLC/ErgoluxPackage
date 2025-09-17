@@ -1,0 +1,15 @@
+meta {
+  name: Get Email by Code
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:8050/account-setup/email-for-code/ABC123XYZ789
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

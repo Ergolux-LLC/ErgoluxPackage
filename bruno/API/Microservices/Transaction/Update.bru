@@ -1,0 +1,25 @@
+meta {
+  name: Update
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8003/00000000-0000-0000-0000-000000000001
+  body: json
+  auth: inherit
+}
+
+body:json {
+{
+  "workspace_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa_updated",
+  "agent_id": "00000000-0000-0000-0000-000000000001",
+  "location_id": "00000000-0000-0000-0000-000000000001",
+  "transaction_date": "2025-09-15",
+  "sale_price": -150.216611,
+  "commission_rate": -149.16842,
+  "phase": "PRE_LISTING",
+  "status": "ACTIVE",
+  "created_by": "00000000-0000-0000-0000-000000000001"
+}
+}

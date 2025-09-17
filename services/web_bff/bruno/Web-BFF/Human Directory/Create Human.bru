@@ -1,0 +1,30 @@
+meta {
+  name: Create Human
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8050/views/directory
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "workspace_id": "00000000-0000-0000-0000-000000000001",
+    "created_by": "00000000-0000-0000-0000-000000000001",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john.doe@example.com",
+    "phone_number": "+1-555-123-4567"
+  }
+}
+
+headers {
+  Content-Type: application/json
+}
+
+settings {
+  encodeUrl: true
+}

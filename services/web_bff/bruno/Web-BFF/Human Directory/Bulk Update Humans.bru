@@ -1,0 +1,37 @@
+meta {
+  name: Bulk Update Humans
+  type: http
+  seq: 6
+}
+
+patch {
+  url: http://localhost:8050/views/directory/bulk
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "workspace_id": "00000000-0000-0000-0000-000000000001",
+    "created_by": "00000000-0000-0000-0000-000000000001",
+    "updates": [
+      {
+        "id": "human-id-1",
+        "first_name": "Jane Updated",
+        "email": "jane.updated@example.com"
+      },
+      {
+        "id": "human-id-2", 
+        "last_name": "Johnson Updated"
+      }
+    ]
+  }
+}
+
+headers {
+  Content-Type: application/json
+}
+
+settings {
+  encodeUrl: true
+}

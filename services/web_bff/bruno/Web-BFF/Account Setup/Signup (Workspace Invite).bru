@@ -1,0 +1,26 @@
+meta {
+  name: Signup (Workspace Invite)
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8050/account-setup/signup
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "user@example.com",
+    "workspace_id": 12345
+  }
+}
+
+headers {
+  Content-Type: application/json
+}
+
+settings {
+  encodeUrl: true
+}

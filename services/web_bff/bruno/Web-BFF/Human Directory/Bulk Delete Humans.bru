@@ -1,0 +1,31 @@
+meta {
+  name: Bulk Delete Humans
+  type: http
+  seq: 8
+}
+
+delete {
+  url: http://localhost:8050/views/directory/bulk
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "workspace_id": "00000000-0000-0000-0000-000000000001",
+    "created_by": "00000000-0000-0000-0000-000000000001",
+    "ids": [
+      "human-id-1",
+      "human-id-2",
+      "human-id-3"
+    ]
+  }
+}
+
+headers {
+  Content-Type: application/json
+}
+
+settings {
+  encodeUrl: true
+}

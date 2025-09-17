@@ -1,0 +1,43 @@
+services:
+  workspace_invite_db:
+    container_name: workspace_invite_db
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    networks:
+      - service_network
+    volumes:
+      - workspace_invite_pgdata:/var/lib/postgresql/data
+
+  workspace_invite_service:
+    container_name: workspace_invite_service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: workspace_invite_db
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+    depends_on:
+      - workspace_invite_db
+    command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000" ]
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    working_dir: /app
+    networks:
+      - service_network
+    ports:
+      - "8007:8000"
+
+volumes:
+  workspace_invite_pgdata:
+
+networks:
+  service_network:
+    external: true

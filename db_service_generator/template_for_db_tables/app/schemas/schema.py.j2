@@ -1,0 +1,47 @@
+from pydantic import BaseModel{% if fields | selectattr("pydantic_type", "equalto", "EmailStr") | list %}, EmailStr{% endif %}{% if fields | selectattr("pydantic_type", "equalto", "HttpUrl") | list %}, HttpUrl{% endif %}
+
+from typing import Optional
+from uuid import UUID
+{% set has_date = fields | selectattr("pydantic_type", "equalto", "date") | list | length > 0 %}
+{% set has_datetime = fields | selectattr("pydantic_type", "equalto", "datetime") | list | length > 0 %}
+{% if has_date or has_datetime %}
+from datetime import {% if has_date %}date{% endif %}{% if has_date and has_datetime %}, {% endif %}{% if has_datetime %}datetime{% endif %}
+{% endif %}
+{% if enum_fields %}
+from app.shared.enums import {{ enum_imports | join(', ') }}
+{% endif %}
+
+
+class {{ table_name|capitalize }}Base(BaseModel):
+    {% if table_name == 'workspace' %}
+    name: str
+    created_by: UUID
+    owner_id: UUID
+    is_active: Optional[bool] = True
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    {% else %}
+    {% for field in fields if field.name != "id" %}
+    {{ field.name }}: {% if not field.required or field.name in ["created_at", "id"] %}Optional[{{ field.pydantic_type }}] = None{% else %}{{ field.pydantic_type }}{% endif %}
+    {% endfor %}
+    {% endif %}
+
+
+class {{ table_name|capitalize }}Create({{ table_name|capitalize }}Base):
+    pass
+
+
+class {{ table_name|capitalize }}Update({{ table_name|capitalize }}Base):
+    pass
+
+
+class {{ table_name|capitalize }}Response({{ table_name|capitalize }}Base):
+    {% if table_name == 'workspace' %}
+    id: int
+    obfuscated_id: str
+    {% else %}
+    id: UUID
+    {% endif %}
+    model_config = {
+        "from_attributes": True
+    }

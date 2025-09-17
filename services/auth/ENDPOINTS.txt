@@ -1,0 +1,182 @@
+AUTH SERVICE ENDPOINTS GUIDE
+
+BASE URL: http://localhost:8600
+
+DEVELOPMENT USER:
+- Email: dev@example.com
+- Password: devpassword123
+- User ID: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+
+===== PUBLIC ENDPOINTS =====
+
+POST /register
+Purpose: Create a new user account
+Method: POST
+Content-Type: application/x-www-form-urlencoded
+Parameters:
+  email (required): User's email address
+  password (required): Plain text password
+  first_name (required): User's first name
+  last_name (required): User's last name
+Response: User object with tokens, sets access_token and refresh_token cookies
+Example:
+  curl -X POST http://localhost:8600/register \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "email=test@example.com&password=testpass123&first_name=John&last_name=Doe"
+
+POST /login
+Purpose: Authenticate user and get tokens
+Method: POST
+Content-Type: application/x-www-form-urlencoded
+Parameters:
+  email (required): User's email address
+  password (required): Plain text password
+Response: User object with tokens, sets access_token and refresh_token cookies
+Example:
+  curl -X POST http://localhost:8600/login \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "email=dev@example.com&password=devpassword123"
+
+POST /refresh
+Purpose: Get new access token using refresh token
+Method: POST
+Authentication: Requires refresh_token cookie
+Response: New tokens, updates access_token and refresh_token cookies
+Example:
+  curl -X POST http://localhost:8600/refresh \
+    -H "Cookie: refresh_token=YOUR_REFRESH_TOKEN"
+
+GET /me
+Purpose: Get current user information
+Method: GET
+Authentication: Requires access_token cookie or Authorization header
+Response: User object without tokens
+Example:
+  curl -X GET http://localhost:8600/me \
+    -H "Cookie: access_token=YOUR_ACCESS_TOKEN"
+  
+  Or with header:
+  curl -X GET http://localhost:8600/me \
+    -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+POST /password/forgot
+Purpose: Request password reset email
+Method: POST
+Content-Type: application/x-www-form-urlencoded
+Parameters:
+  email (required): User's email address
+Response: Generic success message (doesn't reveal if email exists)
+Example:
+  curl -X POST http://localhost:8600/password/forgot \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "email=dev@example.com"
+
+POST /password/reset
+Purpose: Reset password using token from email
+Method: POST
+Content-Type: application/x-www-form-urlencoded
+Parameters:
+  token (required): Reset token from email
+  new_password (required): New plain text password
+Response: Success message
+Example:
+  curl -X POST http://localhost:8600/password/reset \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "token=RESET_TOKEN&new_password=newpassword123"
+
+GET /validate
+Purpose: Validate access token and get user ID
+Method: GET
+Authentication: Requires access_token cookie or Authorization header
+Response: User ID object
+Example:
+  curl -X GET http://localhost:8600/validate \
+    -H "Cookie: access_token=YOUR_ACCESS_TOKEN"
+
+POST /logout
+Purpose: Revoke tokens and clear cookies
+Method: POST
+Authentication: Requires access_token and/or refresh_token cookies
+Response: Logout confirmation, clears all auth cookies
+Example:
+  curl -X POST http://localhost:8600/logout \
+    -H "Cookie: access_token=YOUR_ACCESS_TOKEN; refresh_token=YOUR_REFRESH_TOKEN"
+
+===== INTERNAL ENDPOINTS =====
+
+GET /api/internal/validate
+Purpose: Internal service validation (same as /validate but with /api/internal prefix)
+Method: GET
+Authentication: Requires access_token cookie or Authorization header
+Response: User ID object
+Example:
+  curl -X GET http://localhost:8600/api/internal/validate \
+    -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+===== AUTHENTICATION METHODS =====
+
+1. COOKIES (Recommended for web browsers):
+   - access_token cookie: Used for API authentication
+   - refresh_token cookie: Used for token refresh
+   - Automatically set by login/register/refresh endpoints
+   - Automatically cleared by logout endpoint
+
+2. AUTHORIZATION HEADER (Recommended for APIs):
+   - Header: Authorization: Bearer YOUR_ACCESS_TOKEN
+   - Use for /me, /validate, and /api/internal/validate endpoints
+   - Token obtained from login/register response
+
+===== TYPICAL WORKFLOWS =====
+
+1. USER REGISTRATION:
+   POST /register -> Returns user + tokens + sets cookies
+
+2. USER LOGIN:
+   POST /login -> Returns user + tokens + sets cookies
+
+3. AUTHENTICATED REQUESTS:
+   Use access_token from cookie or Authorization header
+   If token expires, use POST /refresh to get new tokens
+
+4. PASSWORD RESET:
+   POST /password/forgot -> User receives email
+   POST /password/reset with token from email
+
+5. LOGOUT:
+   POST /logout -> Revokes tokens and clears cookies
+
+===== RESPONSE FORMATS =====
+
+Successful Authentication Response:
+{
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "first_name": "John",
+    "last_name": "Doe"
+  },
+  "tokens": {
+    "access_token": "jwt_token",
+    "refresh_token": "jwt_token"
+  }
+}
+
+Validation Response:
+{
+  "user_id": "uuid"
+}
+
+Error Response:
+{
+  "detail": "Error message"
+}
+
+===== NOTES =====
+
+- All endpoints return JSON except where noted
+- Tokens are JWTs with configurable expiration
+- Access tokens expire in 1 hour (3600 seconds)
+- Refresh tokens expire in 7 days (604800 seconds)
+- Development mode resets database on restart
+- All passwords are hashed with bcrypt before storage
+- CORS and security headers are handled by the service

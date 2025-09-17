@@ -1,0 +1,1765 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FastAPI",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/views/directory": {
+      "post": {
+        "tags": [
+          "Human Directory"
+        ],
+        "summary": "Create a Single Human Record",
+        "operationId": "create_human_views_directory_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HumanCreate"
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "get": {
+          "tags": [
+            "Human Directory"
+          ],
+          "summary": "Get Human Records",
+          "operationId": "get_humans_views_directory_get",
+          "parameters": [
+            {
+              "name": "workspace_id",
+              "in": "query",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "description": "Workspace UUID",
+                "title": "Workspace Id"
+              },
+              "description": "Workspace UUID"
+            },
+            {
+              "name": "created_by",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "User UUID (created by)",
+                "title": "Created By"
+              },
+              "description": "User UUID (created by)"
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "maximum": 100,
+                "minimum": 1,
+                "default": 20,
+                "title": "Limit"
+              }
+            },
+            {
+              "name": "offset",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "minimum": 0,
+                "default": 0,
+                "title": "Offset"
+              }
+            },
+            {
+              "name": "q",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Q"
+              }
+            },
+            {
+              "name": "sortBy",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Sortby"
+              }
+            },
+            {
+              "name": "sortDirection",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^(asc|desc)$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Sortdirection"
+              }
+            },
+            {
+              "name": "fields",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Fields"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/views/directory/bulk": {
+        "post": {
+          "tags": [
+            "Human Directory"
+          ],
+          "summary": "Bulk Create Human Records",
+          "operationId": "bulk_create_humans_views_directory_bulk_post",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanBulkCreate"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Human Directory"
+          ],
+          "summary": "Bulk Delete Human Records",
+          "operationId": "bulk_delete_humans_views_directory_bulk_delete",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanBulkDelete"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "patch": {
+          "tags": [
+            "Human Directory"
+          ],
+          "summary": "Bulk Update Human Records",
+          "operationId": "bulk_update_humans_views_directory_bulk_patch",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumanBulkUpdate"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/views/directory/{human_id}": {
+        "get": {
+          "tags": [
+            "Human Directory"
+          ],
+          "summary": "Get a Single Human Record",
+          "operationId": "get_human_views_directory__human_id__get",
+          "parameters": [
+            {
+              "name": "human_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "description": "Human UUID",
+                "title": "Human Id"
+              },
+              "description": "Human UUID"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/views/directory/{id}": {
+        "patch": {
+          "tags": [
+            "Human Directory"
+          ],
+          "summary": "Update a Single Human Record",
+          "operationId": "update_human_views_directory__id__patch",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "title": "Id"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Body"
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {}
+                  }
+                }
+              },
+              "422": {
+                "description": "Validation Error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "delete": {
+            "tags": [
+              "Human Directory"
+            ],
+            "summary": "Delete a Single Human Record",
+            "operationId": "delete_human_views_directory__id__delete",
+            "parameters": [
+              {
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "title": "Id"
+                }
+              }
+            ],
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/WorkspaceUserBase"
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/auth/login": {
+          "post": {
+            "tags": [
+              "auth"
+            ],
+            "summary": "Login",
+            "operationId": "login_auth_login_post",
+            "requestBody": {
+              "content": {
+                "application/x-www-form-urlencoded": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Body_login_auth_login_post"
+                  }
+                }
+              },
+              "required": true
+            },
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {}
+                  }
+                }
+              },
+              "422": {
+                "description": "Validation Error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/auth/validate": {
+          "get": {
+            "tags": [
+              "auth"
+            ],
+            "summary": "Validate",
+            "operationId": "validate_auth_validate_get",
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/auth/logout": {
+          "post": {
+            "tags": [
+              "auth"
+            ],
+            "summary": "Logout",
+            "operationId": "logout_auth_logout_post",
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/account-setup/signup": {
+          "post": {
+            "tags": [
+              "Account Setup"
+            ],
+            "summary": "Initiate user signup process",
+            "description": "This endpoint initiates the user signup process by validating the email and generating an activation code.\n\n**Process Flow:**\n1. Receives email address and optional workspace_id\n2. Forwards request to setup microservice for email validation and code generation\n3. Setup microservice checks if email is already confirmed\n4. If not confirmed, generates new activation code and sends via email\n5. Returns status indicating whether user should proceed to login or check email\n\n**Input Options:**\n- **Self Signup**: Provide email only (workspace_id = null)\n- **Workspace Invite**: Provide email and workspace_id\n\n**Response Scenarios:**\n- **Already Confirmed**: User should be directed to login page\n- **New/Pending**: User should check email for activation link\n\n**Used By:**\n- Frontend signup forms (/signup page)\n- Workspace admin invite systems",
+            "operationId": "signup_account_setup_signup_post",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/SignupRequest"
+                  }
+                }
+              },
+              "required": true
+            },
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/SignupResponse"
+                    }
+                  }
+                }
+              },
+              "422": {
+                "description": "Validation Error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/account-setup/confirm": {
+          "post": {
+            "tags": [
+              "Account Setup"
+            ],
+            "summary": "Confirm activation code",
+            "description": "This endpoint confirms an activation code received via email and activates the user's email address.\n\n**Process Flow:**\n1. Receives activation code from user (via link click or manual entry)\n2. Forwards code to setup microservice for validation\n3. Setup microservice validates code and activates email if valid\n4. Returns email address and workspace information associated with the code\n\n**Frontend Integration:**\n- Called when user visits /setup?code=ACTIVATION_CODE\n- Response determines next steps in user setup flow\n\n**Response Data:**\n- **valid**: Whether the code is valid and email is now activated\n- **email**: The email address that was activated\n- **workspace_id**: Workspace ID if this was a workspace invitation",
+            "operationId": "confirm_account_setup_confirm_post",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ConfirmRequest"
+                  }
+                }
+              },
+              "required": true
+            },
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ConfirmResponse"
+                    }
+                  }
+                }
+              },
+              "422": {
+                "description": "Validation Error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/account-setup/status/{email}": {
+          "get": {
+            "tags": [
+              "Account Setup"
+            ],
+            "summary": "Get email signup status",
+            "description": "This endpoint retrieves the current signup status for a given email address.\n\n**Use Cases:**\n- Check if email is already confirmed (for login redirection)\n- Monitor signup progress for debugging\n- Verify email validity before proceeding with signup\n\n**Status Values:**\n- **pending**: Email signup initiated, awaiting activation\n- **confirmed**: Email has been activated, user can proceed\n- **failed**: Signup failed due to invalid email or other issues\n\n**Admin Usage:**\nThis endpoint can be used by administrators to check the status of user signups\nand troubleshoot activation issues.",
+            "operationId": "status_account_setup_status__email__get",
+            "parameters": [
+              {
+                "name": "email",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "email",
+                  "title": "Email"
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/StatusResponse"
+                    }
+                  }
+                }
+              },
+              "422": {
+                "description": "Validation Error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/account-setup/emails": {
+          "get": {
+            "tags": [
+              "Account Setup"
+            ],
+            "summary": "List all email signups (Admin)",
+            "description": "This endpoint returns a comprehensive list of all email signups in the system.\n\n**Administrative Endpoint:**\nThis endpoint is intended for internal/administrative use only and should be protected\nby appropriate authentication and authorization mechanisms in production.\n\n**Response Data:**\nReturns detailed information about all signup attempts including:\n- Email addresses and their current status\n- Associated workspace IDs for workspace invitations  \n- Timestamp information for signup tracking\n- Email sending results and validation status\n\n**Security Note:**\nThis endpoint exposes sensitive user data and should be restricted to administrators only.\nConsider implementing proper access controls before deploying to production.",
+            "operationId": "emails_account_setup_emails_get",
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/EmailsResponse"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/account-setup/email-for-code/{code}": {
+          "get": {
+            "tags": [
+              "Account Setup"
+            ],
+            "summary": "Retrieve email by activation code",
+            "description": "This endpoint retrieves the email address and associated information for a given activation code.\n\n**Use Cases:**\n- Validate activation codes before processing\n- Look up user information during the activation flow\n- Debug activation issues by checking code-to-email mappings\n\n**Security Considerations:**\n- Activation codes should be treated as temporary secrets\n- This endpoint should validate code expiration\n- Consider rate limiting to prevent code enumeration attacks\n\n**Response Information:**\n- **email**: The email address associated with the activation code\n- **workspace_id**: Workspace ID if this was a workspace invitation\n- **valid**: Whether the code exists and is still valid (not expired)",
+            "operationId": "email_for_code_account_setup_email_for_code__code__get",
+            "parameters": [
+              {
+                "name": "code",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "title": "Code"
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/EmailForCodeResponse"
+                    }
+                  }
+                }
+              },
+              "422": {
+                "description": "Validation Error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/user-setup/workspaces/{workspace_id}/validate": {
+          "get": {
+            "tags": [
+              "User Setup"
+            ],
+            "summary": "Validate workspace accessibility",
+            "description": "This endpoint validates that a workspace exists and is accessible for new user registration.\nIt checks workspace validity and returns workspace details including name and icon.\nUsed during the user setup flow to confirm workspace invitation validity.",
+            "operationId": "validate_workspace_user_setup_workspaces__workspace_id__validate_get",
+            "parameters": [
+              {
+                "name": "workspace_id",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "title": "Workspace Id"
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/WorkspaceValidationResponse"
+                    }
+                  }
+                }
+              },
+              "422": {
+                "description": "Validation Error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/user-setup/complete": {
+          "post": {
+            "tags": [
+              "User Setup"
+            ],
+            "summary": "Complete user setup with workspace association",
+            "description": "This is the comprehensive endpoint that handles the final user setup process.\nIt coordinates between workspace, human, and auth microservices to create a complete user account.\n\n**Process Flow:**\n1. Validates/creates workspace (based on workspace_id vs new_workspace_name)\n2. Stores user details in human microservice with workspace association\n3. Creates authentication credentials in auth microservice\n4. Performs rollback of all changes if any step fails\n\n**Input Requirements:**\n- Either `workspace_id` (to join existing) OR `new_workspace_name` (to create new) must be provided\n- Email must have been pre-activated through the account setup flow\n- Password must meet security requirements (min 8 characters)\n\n**Error Handling:**\n- All database changes are rolled back if any step fails\n- Detailed error messages are provided for debugging\n- Rollback status is indicated in the response",
+            "operationId": "complete_user_setup_user_setup_complete_post",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/UserSetupRequest"
+                  }
+                }
+              },
+              "required": true
+            },
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/UserSetupResponse"
+                    }
+                  }
+                }
+              },
+              "422": {
+                "description": "Validation Error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/workspaces/{workspace_id}/validate": {
+          "get": {
+            "tags": [
+              "Workspaces"
+            ],
+            "summary": "Validate workspace for user signup",
+            "description": "This endpoint validates that a workspace exists and is accessible for new user registration.\nIt's specifically designed for the user setup flow to verify workspace invitations.\n\n**Use Cases:**\n- Validate workspace invitation links before user signup\n- Verify workspace accessibility during user setup process\n- Get workspace details (name, icon) for invitation confirmation dialogs\n\n**Response Information:**\n- **exists**: Whether the workspace exists and is accessible\n- **name**: Workspace name for display in confirmation dialogs\n- **icon_file_tag**: Workspace icon file tag for UI display\n- **error**: Error message if workspace is not accessible\n\n**Integration:**\nThis endpoint is called during the user setup flow when a workspace_id is provided,\neither from an invitation link or during the signup process.",
+            "operationId": "validate_workspace_for_signup_workspaces__workspace_id__validate_get",
+            "parameters": [
+              {
+                "name": "workspace_id",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "integer",
+                  "title": "Workspace Id"
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {}
+                  }
+                }
+              },
+              "422": {
+                "description": "Validation Error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/workspaces": {
+          "get": {
+            "tags": [
+              "Workspaces"
+            ],
+            "summary": "Search workspaces",
+            "description": "This endpoint allows searching and listing workspaces. It supports filtering by name and pagination.",
+            "operationId": "search_workspaces_workspaces_get",
+            "parameters": [
+              {
+                "name": "name",
+                "in": "query",
+                "required": false,
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Filter workspaces by name",
+                  "title": "Name"
+                },
+                "description": "Filter workspaces by name"
+              },
+              {
+                "name": "limit",
+                "in": "query",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "maximum": 100,
+                  "minimum": 1,
+                  "description": "Number of workspaces per page",
+                  "default": 20,
+                  "title": "Limit"
+                },
+                "description": "Number of workspaces per page"
+              },
+              {
+                "name": "offset",
+                "in": "query",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Offset for pagination",
+                  "default": 0,
+                  "title": "Offset"
+                },
+                "description": "Offset for pagination"
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/WorkspaceSearchResponse"
+                    }
+                  }
+                }
+              },
+              "422": {
+                "description": "Validation Error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/HTTPValidationError"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "post": {
+            "tags": [
+              "Workspaces"
+            ],
+            "summary": "Create a new workspace",
+            "description": "This endpoint allows internal services to create a new workspace. The `owner_id` and `created_by` fields are populated from the user ID in the cookies.",
+            "operationId": "create_workspace_workspaces_post",
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/WorkspaceRequest"
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/WorkspaceResponse"
+                      }
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "/health": {
+          "get": {
+            "tags": [
+              "Health"
+            ],
+            "summary": "Health Check",
+            "operationId": "health_check_health_get",
+            "responses": {
+              "200": {
+                "description": "Successful Response",
+                "content": {
+                  "application/json": {
+                    "schema": {}
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "components": {
+        "schemas": {
+          "Body_login_auth_login_post": {
+            "properties": {
+              "email": {
+                "type": "string",
+                "title": "Email"
+              },
+              "password": {
+                "type": "string",
+                "title": "Password"
+              }
+            },
+            "type": "object",
+            "required": [
+              "email",
+              "password"
+            ],
+            "title": "Body_login_auth_login_post"
+          },
+          "ConfirmRequest": {
+            "properties": {
+              "code": {
+                "type": "string",
+                "maxLength": 50,
+                "minLength": 1,
+                "title": "Code",
+                "description": "Activation code received via email"
+              }
+            },
+            "type": "object",
+            "required": [
+              "code"
+            ],
+            "title": "ConfirmRequest",
+            "description": "Request model for confirming activation codes received via email.\n\nThis model is used when users click the activation link in their email\nor manually enter the activation code."
+          },
+          "ConfirmResponse": {
+            "properties": {
+              "valid": {
+                "type": "boolean",
+                "title": "Valid",
+                "description": "Whether the activation code is valid"
+              },
+              "email": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Email",
+                "description": "Email address associated with the code"
+              },
+              "workspace_id": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Workspace Id",
+                "description": "Workspace ID if this was a workspace invitation"
+              }
+            },
+            "type": "object",
+            "required": [
+              "valid"
+            ],
+            "title": "ConfirmResponse",
+            "description": "Response model for activation code confirmation operations.\n\nThis response indicates whether the provided activation code was valid and provides\nthe associated email address and optional workspace information."
+          },
+          "EmailForCodeResponse": {
+            "properties": {
+              "email": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Email",
+                "description": "Email address associated with the activation code"
+              },
+              "workspace_id": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Workspace Id",
+                "description": "Workspace ID if this was a workspace invitation"
+              },
+              "valid": {
+                "type": "boolean",
+                "title": "Valid",
+                "description": "Whether the code exists and is valid"
+              }
+            },
+            "type": "object",
+            "required": [
+              "valid"
+            ],
+            "title": "EmailForCodeResponse",
+            "description": "Response model for retrieving email information by activation code.\n\nUsed to look up which email address is associated with a given activation code."
+          },
+          "EmailsResponse": {
+            "properties": {
+              "emails": {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array",
+                "title": "Emails",
+                "description": "List of all email signup records with their details"
+              }
+            },
+            "type": "object",
+            "required": [
+              "emails"
+            ],
+            "title": "EmailsResponse",
+            "description": "Response model for listing all email signups (admin endpoint).\n\nUsed for administrative purposes to view all signup attempts and their statuses."
+          },
+          "HTTPValidationError": {
+            "properties": {
+              "detail": {
+                "items": {
+                  "$ref": "#/components/schemas/ValidationError"
+                },
+                "type": "array",
+                "title": "Detail"
+              }
+            },
+            "type": "object",
+            "title": "HTTPValidationError"
+          },
+          "HumanBulkCreate": {
+            "properties": {
+              "workspace_id": {
+                "type": "string",
+                "title": "Workspace Id",
+                "description": "Workspace UUID"
+              },
+              "created_by": {
+                "type": "string",
+                "title": "Created By",
+                "description": "User UUID (created by)"
+              },
+              "humans": {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array",
+                "title": "Humans"
+              }
+            },
+            "type": "object",
+            "required": [
+              "workspace_id",
+              "created_by",
+              "humans"
+            ],
+            "title": "HumanBulkCreate"
+          },
+          "HumanBulkDelete": {
+            "properties": {
+              "workspace_id": {
+                "type": "string",
+                "title": "Workspace Id",
+                "description": "Workspace UUID"
+              },
+              "created_by": {
+                "type": "string",
+                "title": "Created By",
+                "description": "User UUID (created by)"
+              },
+              "ids": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "title": "Ids"
+              }
+            },
+            "type": "object",
+            "required": [
+              "workspace_id",
+              "created_by",
+              "ids"
+            ],
+            "title": "HumanBulkDelete"
+          },
+          "HumanBulkUpdate": {
+            "properties": {
+              "workspace_id": {
+                "type": "string",
+                "title": "Workspace Id",
+                "description": "Workspace UUID"
+              },
+              "created_by": {
+                "type": "string",
+                "title": "Created By",
+                "description": "User UUID (created by)"
+              },
+              "updates": {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array",
+                "title": "Updates"
+              }
+            },
+            "type": "object",
+            "required": [
+              "workspace_id",
+              "created_by",
+              "updates"
+            ],
+            "title": "HumanBulkUpdate"
+          },
+          "HumanCreate": {
+            "properties": {
+              "workspace_id": {
+                "type": "string",
+                "title": "Workspace Id"
+              },
+              "created_by": {
+                "type": "string",
+                "title": "Created By"
+              },
+              "first_name": {
+                "type": "string",
+                "title": "First Name"
+              },
+              "last_name": {
+                "type": "string",
+                "title": "Last Name"
+              },
+              "middle_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Middle Name"
+              },
+              "email": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Email"
+              },
+              "phone_number": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Phone Number"
+              },
+              "linkedin_url": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Linkedin Url"
+              }
+            },
+            "type": "object",
+            "required": [
+              "workspace_id",
+              "created_by",
+              "first_name",
+              "last_name"
+            ],
+            "title": "HumanCreate"
+          },
+          "SignupRequest": {
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email",
+                "title": "Email",
+                "description": "User's email address to be activated"
+              },
+              "workspace_id": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Workspace Id",
+                "description": "Optional workspace ID for workspace invitations"
+              }
+            },
+            "type": "object",
+            "required": [
+              "email"
+            ],
+            "title": "SignupRequest",
+            "description": "Request model for initial user signup - supports both self-signup and workspace invites.\n\nThis model handles the first step of the user registration process where an email\nis registered and an activation code is generated and sent via email."
+          },
+          "SignupResponse": {
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "title": "Success",
+                "description": "Whether the signup process was initiated successfully"
+              },
+              "email_confirmation_status": {
+                "type": "string",
+                "title": "Email Confirmation Status",
+                "description": "Status of email confirmation (confirmed|pending|failed)"
+              },
+              "code": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Code",
+                "description": "Debug: activation code (for testing only - remove in production)"
+              },
+              "reason": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Reason",
+                "description": "Reason for failure if success is false"
+              }
+            },
+            "type": "object",
+            "required": [
+              "success",
+              "email_confirmation_status"
+            ],
+            "title": "SignupResponse",
+            "description": "Response model for signup operations indicating whether email activation was initiated.\n\nThe success field indicates whether the signup process was initiated successfully.\nThe code field may contain debug information (should not be exposed in production)."
+          },
+          "StatusResponse": {
+            "properties": {
+              "status": {
+                "type": "string",
+                "title": "Status",
+                "description": "Current status of the signup (pending|confirmed|failed)"
+              },
+              "last_email_result": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Last Email Result",
+                "description": "Result of the last email sending attempt"
+              },
+              "is_valid": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Is Valid",
+                "description": "Whether the email format and domain are valid"
+              },
+              "email_confirmation_status": {
+                "type": "string",
+                "title": "Email Confirmation Status",
+                "description": "Email confirmation status"
+              }
+            },
+            "type": "object",
+            "required": [
+              "status",
+              "email_confirmation_status"
+            ],
+            "title": "StatusResponse",
+            "description": "Response model for checking the status of an email signup process.\n\nProvides comprehensive status information about the signup process for a given email."
+          },
+          "UserSetupRequest": {
+            "properties": {
+              "first_name": {
+                "type": "string",
+                "maxLength": 50,
+                "minLength": 1,
+                "title": "First Name",
+                "description": "User's first name"
+              },
+              "last_name": {
+                "type": "string",
+                "maxLength": 50,
+                "minLength": 1,
+                "title": "Last Name",
+                "description": "User's last name"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "title": "Email",
+                "description": "User's email address (must be pre-activated)"
+              },
+              "password": {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 8,
+                "title": "Password",
+                "description": "User's password"
+              },
+              "workspace_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Workspace Id",
+                "description": "Existing workspace ID to join (if joining existing workspace)"
+              },
+              "new_workspace_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "New Workspace Name",
+                "description": "New workspace name to create (if creating new workspace)"
+              }
+            },
+            "type": "object",
+            "required": [
+              "first_name",
+              "last_name",
+              "email",
+              "password"
+            ],
+            "title": "UserSetupRequest",
+            "description": "Comprehensive user setup request model containing all necessary information\nto create a complete user account with workspace association."
+          },
+          "UserSetupResponse": {
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "title": "Success",
+                "description": "Whether the user setup was successful"
+              },
+              "user_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "User Id",
+                "description": "Created user ID if successful"
+              },
+              "workspace_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Workspace Id",
+                "description": "Final workspace ID (existing or newly created)"
+              },
+              "workspace_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Workspace Name",
+                "description": "Final workspace name"
+              },
+              "error_details": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Error Details",
+                "description": "Detailed error message if setup failed"
+              },
+              "rollback_performed": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Rollback Performed",
+                "description": "Whether rollback was performed due to errors"
+              }
+            },
+            "type": "object",
+            "required": [
+              "success"
+            ],
+            "title": "UserSetupResponse",
+            "description": "Response model for user setup operations indicating success or failure\nwith detailed error information for debugging."
+          },
+          "ValidationError": {
+            "properties": {
+              "loc": {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ]
+                },
+                "type": "array",
+                "title": "Location"
+              },
+              "msg": {
+                "type": "string",
+                "title": "Message"
+              },
+              "type": {
+                "type": "string",
+                "title": "Error Type"
+              }
+            },
+            "type": "object",
+            "required": [
+              "loc",
+              "msg",
+              "type"
+            ],
+            "title": "ValidationError"
+          },
+          "WorkspaceItem": {
+            "properties": {
+              "id": {
+                "type": "integer",
+                "title": "Id"
+              },
+              "name": {
+                "type": "string",
+                "title": "Name"
+              },
+              "owner_id": {
+                "type": "string",
+                "title": "Owner Id"
+              },
+              "created_by": {
+                "type": "string",
+                "title": "Created By"
+              },
+              "created_at": {
+                "type": "string",
+                "title": "Created At"
+              }
+            },
+            "type": "object",
+            "required": [
+              "id",
+              "name",
+              "owner_id",
+              "created_by",
+              "created_at"
+            ],
+            "title": "WorkspaceItem"
+          },
+          "WorkspaceRequest": {
+            "properties": {
+              "name": {
+                "type": "string",
+                "title": "Name"
+              }
+            },
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "title": "WorkspaceRequest"
+          },
+          "WorkspaceResponse": {
+            "properties": {
+              "success": {
+                "type": "boolean",
+                "title": "Success"
+              },
+              "workspace_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Workspace Id"
+              },
+              "reason": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Reason"
+              }
+            },
+            "type": "object",
+            "required": [
+              "success"
+            ],
+            "title": "WorkspaceResponse"
+          },
+          "WorkspaceSearchResponse": {
+            "properties": {
+              "results": {
+                "items": {
+                  "$ref": "#/components/schemas/WorkspaceItem"
+                },
+                "type": "array",
+                "title": "Results"
+              },
+              "total": {
+                "type": "integer",
+                "title": "Total"
+              },
+              "limit": {
+                "type": "integer",
+                "title": "Limit"
+              },
+              "offset": {
+                "type": "integer",
+                "title": "Offset"
+              }
+            },
+            "type": "object",
+            "required": [
+              "results",
+              "total",
+              "limit",
+              "offset"
+            ],
+            "title": "WorkspaceSearchResponse"
+          },
+          "WorkspaceUserBase": {
+            "properties": {
+              "workspace_id": {
+                "type": "string",
+                "title": "Workspace Id",
+                "description": "Workspace UUID"
+              },
+              "created_by": {
+                "type": "string",
+                "title": "Created By",
+                "description": "User UUID (created by)"
+              }
+            },
+            "type": "object",
+            "required": [
+              "workspace_id",
+              "created_by"
+            ],
+            "title": "WorkspaceUserBase"
+          },
+          "WorkspaceValidationResponse": {
+            "properties": {
+              "valid": {
+                "type": "boolean",
+                "title": "Valid",
+                "description": "Whether the workspace ID is valid and accessible"
+              },
+              "workspace_name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Workspace Name",
+                "description": "Workspace name if valid"
+              },
+              "workspace_icon_file_tag": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Workspace Icon File Tag",
+                "description": "Workspace icon file tag if available"
+              },
+              "error_details": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Error Details",
+                "description": "Error details if validation failed"
+              }
+            },
+            "type": "object",
+            "required": [
+              "valid"
+            ],
+            "title": "WorkspaceValidationResponse",
+            "description": "Response model for workspace validation operations."
+          }
+        }
+      }
+    }
+  }
+}

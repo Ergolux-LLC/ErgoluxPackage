@@ -1,0 +1,15 @@
+meta {
+  name: Validate Session
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8050/auth/validate
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

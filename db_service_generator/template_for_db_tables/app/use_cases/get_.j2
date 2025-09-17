@@ -1,0 +1,12 @@
+from uuid import UUID
+from app.schemas.{{ table_name }} import {{ table_name|capitalize }}Response
+
+class Get{{ table_name|capitalize }}:
+    def __init__(self, relational_db):
+        self.relational_db = relational_db
+
+    def execute(self, item_id: UUID) -> {{ table_name|capitalize }}Response | None:
+        item = self.relational_db.get_by_id(item_id)
+        if item is None:
+            return None
+        return {{ table_name|capitalize }}Response.from_orm(item)

@@ -1,0 +1,21 @@
+import logging
+from app.models.{{ table_name }} import {{ table_name|capitalize }}
+
+logger = logging.getLogger(__name__)
+
+class Search{{ table_name|capitalize }}:
+    def __init__(self, relational_db):
+        self.relational_db = relational_db
+
+    def execute(self, limit=20, offset=0, **filters):
+        """
+        Paginated search for {{ table_name }}s.
+        Returns (results, total).
+        """
+        query = self.relational_db.db.query({{ table_name|capitalize }})
+        for key, value in filters.items():
+            if hasattr({{ table_name|capitalize }}, key):
+                query = query.filter(getattr({{ table_name|capitalize }}, key) == value)
+        total = query.count()
+        results = query.offset(offset).limit(limit).all()
+        return results, total

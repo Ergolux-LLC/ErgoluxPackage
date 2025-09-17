@@ -1,0 +1,38 @@
+meta {
+  name: Bulk Create Humans
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8050/views/directory/bulk
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "workspace_id": "00000000-0000-0000-0000-000000000001",
+    "created_by": "00000000-0000-0000-0000-000000000001",
+    "humans": [
+      {
+        "first_name": "Jane",
+        "last_name": "Smith",
+        "email": "jane.smith@example.com"
+      },
+      {
+        "first_name": "Bob",
+        "last_name": "Johnson",
+        "email": "bob.johnson@example.com"
+      }
+    ]
+  }
+}
+
+headers {
+  Content-Type: application/json
+}
+
+settings {
+  encodeUrl: true
+}

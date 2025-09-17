@@ -1,0 +1,15 @@
+meta {
+  name: Check Status
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8050/account-setup/status/user@whateverdomain.com
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

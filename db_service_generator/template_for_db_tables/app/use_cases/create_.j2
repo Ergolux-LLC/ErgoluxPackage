@@ -1,0 +1,57 @@
+import logging
+from app.models.{{ table_name }} import {{ table_name|capitalize }}
+from app.schemas.{{ table_name }} import {{ table_name|capitalize }}Create, {{ table_name|capitalize }}Response
+from datetime import datetime, timezone
+import uuid
+
+logger = logging.getLogger(__name__)
+
+
+class Create{{ table_name|capitalize }}:
+    def __init__(self, db):
+        self.db = db
+
+    def execute(self, payload):
+        data = payload.dict()
+        {% if table_name == 'workspace' %}
+        # Only keep allowed fields
+        allowed = {"name", "created_by", "owner_id", "is_active", "created_at", "updated_at"}
+        data = {k: v for k, v in data.items() if k in allowed}
+        # Default is_active to True if not provided
+        if "is_active" not in data or data["is_active"] is None:
+            data["is_active"] = True
+        # Set created_at if not provided
+        if not data.get("created_at"):
+            data["created_at"] = datetime.now(timezone.utc)
+        {% else %}
+        # Convert Pydantic types to primitives (e.g., HttpUrl, EmailStr)
+        {% for field in fields if field.pydantic_type in ["HttpUrl", "EmailStr"] %}
+        if "{{ field.name }}" in data and data["{{ field.name }}"] is not None:
+            data["{{ field.name }}"] = str(data["{{ field.name }}"])
+        {% endfor %}
+        # Explicitly check for required fields (defensive, in case validation is bypassed)
+        {% for field in fields if field.required and field.pydantic_type != "UUID" and field.name != "created_at" %}
+        if not data.get("{{ field.name }}"):
+            logger.warning("Missing required field: {{ field.name }}")
+            raise ValueError("Missing required field: {{ field.name }}")
+        {% endfor %}
+        # Auto-generate UUIDs for any UUID field if not provided
+        {% for field in fields if field.pydantic_type == "UUID" %}
+        if not data.get("{{ field.name }}"):
+            data["{{ field.name }}"] = uuid.uuid4()
+        {% endfor %}
+        # Set created_at if not provided
+        {% for field in fields if field.name == "created_at" %}
+        if not data.get("created_at"):
+            data["created_at"] = datetime.now(timezone.utc)
+        {% endfor %}
+        {% if 'name' in fields | map(attribute='name') | list %}
+        # Check for duplicate name (if applicable)
+        existing = self.db.db.query({{ table_name|capitalize }}).filter_by(name=data["name"]).first()
+        if existing:
+            logger.warning("{{ table_name|capitalize }} name must be unique: %s", data["name"])
+            raise ValueError("{{ table_name|capitalize }} name must be unique")
+        {% endif %}
+        {% endif %}
+        obj = self.db.create(data)
+        return obj

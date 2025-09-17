@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  web:
+    image: python:3.11-slim
+    command: ["sh", "/app/web-logger.sh"]
+    container_name: "web"
+    volumes:
+      - shared-logs:/app/logs
+      - ./web-logger.sh:/app/web-logger.sh:ro
+    networks:
+      - loki-demo_default
+
+volumes:
+  shared-logs:
+    external: true
+    name: loki-demo_shared-logs
+
+networks:
+  loki-demo_default:
+    external: true

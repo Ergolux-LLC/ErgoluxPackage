@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  worker:
+    image: python:3.11-slim
+    command: ["sh", "/app/worker-logger.sh"]
+    container_name: "worker"
+    volumes:
+      - shared-logs:/app/logs
+      - ./worker-logger.sh:/app/worker-logger.sh:ro
+    networks:
+      - loki-demo_default
+
+volumes:
+  shared-logs:
+    external: true
+    name: loki-demo_shared-logs
+
+networks:
+  loki-demo_default:
+    external: true

@@ -1,0 +1,15 @@
+meta {
+  name: Get Code for Email (Dev Only)
+  type: http
+  seq: 7
+}
+
+get {
+  url: http://localhost:8050/account-setup/dev/get-code/dev%2B1757442826793%40starwars.com
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,20 @@
+meta {
+  name: Create
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8004/
+  body: json
+  auth: inherit
+}
+
+body:json {
+{
+  "workspace_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+  "first_name": "test_first_name",
+  "last_name": "test_last_name",
+  "created_by": "00000000-0000-0000-0000-000000000001"
+}
+}

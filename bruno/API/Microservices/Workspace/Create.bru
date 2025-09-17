@@ -1,0 +1,20 @@
+meta {
+  name: Create
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8005/
+  body: json
+  auth: inherit
+}
+
+body:json {
+{
+  "name": "test_name",
+  "created_at": "2025-09-16T02:35:34.110227+00:00",
+  "created_by": "00000000-0000-0000-0000-000000000001",
+  "owner_id": "00000000-0000-0000-0000-000000000001"
+}
+}

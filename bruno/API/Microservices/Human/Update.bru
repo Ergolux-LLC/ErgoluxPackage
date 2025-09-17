@@ -1,0 +1,20 @@
+meta {
+  name: Update
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:8004/00000000-0000-0000-0000-000000000001
+  body: json
+  auth: inherit
+}
+
+body:json {
+{
+  "workspace_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa_updated",
+  "first_name": "test_first_name",
+  "last_name": "test_last_name",
+  "created_by": "00000000-0000-0000-0000-000000000001"
+}
+}
