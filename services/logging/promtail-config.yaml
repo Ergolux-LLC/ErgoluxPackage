@@ -1,0 +1,82 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: web-bff-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: web-bff-service
+          service: web_bff
+          __path__: /app/logs/web_bff.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) (?P<level>\w+):(?P<logger>.*?):(?P<message>.*)'
+      - labels:
+          level:
+          logger:
+      - timestamp:
+          source: timestamp
+          format: '2006-01-02 15:04:05,000'
+
+  - job_name: account-setup-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: account-setup-service
+          service: account_setup
+          __path__: /app/logs/account_setup.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) (?P<level>\w+):(?P<logger>.*?):(?P<message>.*)'
+      - labels:
+          level:
+          logger:
+      - timestamp:
+          source: timestamp
+          format: '2006-01-02 15:04:05,000'
+
+  - job_name: auth-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: auth-service
+          service: auth
+          __path__: /app/logs/auth.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) (?P<level>\w+):(?P<logger>.*?):(?P<message>.*)'
+      - labels:
+          level:
+          logger:
+      - timestamp:
+          source: timestamp
+          format: '2006-01-02 15:04:05,000'
+
+  - job_name: db-services-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: db-services
+          service: db
+          __path__: /app/logs/db_*.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) (?P<level>\w+):(?P<logger>.*?):(?P<message>.*)'
+      - labels:
+          level:
+          logger:
+      - timestamp:
+          source: timestamp
+          format: '2006-01-02 15:04:05,000'

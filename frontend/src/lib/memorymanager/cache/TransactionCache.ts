@@ -1,0 +1,1 @@
+// Caches real estate transaction history, deal pipeline status, and document metadata. Stores active deals, transaction timelines, commission calculations, and deal status updates. Provides instant access to deal history, pipeline views, and commission tracking without server round-trips.

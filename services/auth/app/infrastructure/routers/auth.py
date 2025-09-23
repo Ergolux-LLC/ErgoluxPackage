@@ -1,6 +1,3 @@
-
-
-
 # Prereqs
 import logging
 logger = logging.getLogger() 
@@ -130,11 +127,20 @@ def get_router(relational_db_adapter, key_value_adapter, config: Config, user_no
 
         except Exception as e:
             logger.exception("Unexpected error during login for email %s: %s", email, str(e))
-            raise HTTPException(status_code=500, detail="Internal server error")
+            # Check if it's a database connectivity issue
+            if "current transaction is aborted" in str(e) or "connection" in str(e).lower():
+                raise HTTPException(status_code=503, detail="Service temporarily unavailable. Please try again in a moment.")
+            else:
+                raise HTTPException(status_code=500, detail="Internal server error")
 
         if auth_response.error:
             logger.warning("Login failed for email %s: %s", email, auth_response.error)
-            raise HTTPException(status_code=401, detail="Invalid email or password")
+            # Use the status code from the auth response for better error handling
+            status_code = getattr(auth_response, 'status_code', 401)
+            if status_code == 503:
+                raise HTTPException(status_code=503, detail=auth_response.error)
+            else:
+                raise HTTPException(status_code=401, detail="Invalid email or password")
 
         logger.info("Login successful for email: %s", email)
 
@@ -148,44 +154,73 @@ def get_router(relational_db_adapter, key_value_adapter, config: Config, user_no
         request: Request,
         response: Response,
         refresh_token: str = Cookie(None),
-        repo: RelationalRepository = Depends(get_relational_adapter),
-        kv: KeyValueRepository = Depends(get_keyvalue_adapter),
+        relational_db_adapter: RelationalRepository = Depends(get_relational_adapter),  # FIXED: was get_relational_db_adapter
+        keyvalue_adapter: KeyValueRepository = Depends(get_keyvalue_adapter),
         config: Config = Depends(get_config)
     ):
         logger.info("Refresh endpoint called")
-
+        
+        # Debug: Log all cookies received
+        all_cookies = request.cookies
+        logger.info(f"All cookies received: {dict(all_cookies)}")
+        logger.info(f"Refresh token from Cookie parameter: {refresh_token}")
+        
+        # Check if refresh token is missing
         if not refresh_token:
             logger.warning("Refresh token missing in cookie")
             raise HTTPException(status_code=401, detail="Missing refresh token")
-
-        ip_address = request.client.host if request.client else "0.0.0.0"
+        
+        logger.info(f"Processing refresh for token: {refresh_token[:20]}...")
+        
+        # Get client info for the refresh
+        client_ip = request.client.host if request.client else "unknown"
         user_agent = request.headers.get("user-agent", "unknown")
-        device_id = "web_browser"
-
+        device_id = "web_browser"  # Default device ID
+        
+        logger.info(f"Client info - IP: {client_ip}, UA: {user_agent}, Device: {device_id}")
+        
         try:
+            # Debug: Check what's in Redis for this token
+            logger.info(f"Checking Redis for refresh token: {refresh_token}")
+            
+            # Call the refresh use case
             auth_response = await refresh_use_case(
+                config=config,
                 refresh_token=refresh_token,
-                ip_address=ip_address,
+                ip_address=client_ip,
                 user_agent=user_agent,
                 device_id=device_id,
-                database_adapter=repo,
-                keyvalue_adapter=kv,
-                config=config,
+                database_adapter=relational_db_adapter,
+                keyvalue_adapter=keyvalue_adapter,
                 AuthResponse=AuthResponse
             )
+            
+            logger.info("Token refresh successful")
+            
+            # Debug: Check the auth_response structure
+            logger.info(f"DEBUG: About to check auth_response")
+            logger.info(f"DEBUG: auth_response object: {auth_response}")
+            logger.info(f"DEBUG: auth_response type: {type(auth_response)}")
+            logger.info(f"DEBUG: auth_response.tokens: {auth_response.tokens}")
+            logger.info(f"DEBUG: tokens type: {type(auth_response.tokens)}")
+            if auth_response.tokens:
+                logger.info(f"DEBUG: tokens keys: {auth_response.tokens.keys() if hasattr(auth_response.tokens, 'keys') else 'No keys method'}")
+                logger.info(f"DEBUG: refresh_token value: {auth_response.tokens.get('refresh_token', 'KEY_NOT_FOUND')}")
+            
+            # Set new refresh token cookie if provided
+            if auth_response.tokens and 'refresh_token' in auth_response.tokens:
+                set_auth_cookies(response, auth_response.tokens['access_token'], auth_response.tokens['refresh_token'])
+                logger.info("Set new refresh token cookie")
+            else:
+                logger.warning("Failed to set refresh token cookie - tokens missing or no refresh_token key")
+                logger.warning(f"Condition check: tokens={bool(auth_response.tokens)}, has_refresh={'refresh_token' in auth_response.tokens if auth_response.tokens else False}")
+            
+            return auth_response.to_dict()
+            
         except Exception as e:
-            logger.exception("Unexpected error during token refresh: %s", str(e))
-            raise HTTPException(status_code=500, detail="Internal server error")
+            logger.warning(f"Token refresh failed: {str(e)}")
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-        if auth_response.error:
-            logger.warning("Token refresh failed: %s", auth_response.error)
-            raise HTTPException(status_code=401, detail=auth_response.error)
-
-        logger.info("Token refresh successful for user %s", auth_response.user["id"])
-
-        set_auth_cookies(response, auth_response.tokens["access_token"], auth_response.tokens["refresh_token"])
-        return auth_response.to_dict()
-    
     @router.get("/me")
     async def me(
         request: Request,

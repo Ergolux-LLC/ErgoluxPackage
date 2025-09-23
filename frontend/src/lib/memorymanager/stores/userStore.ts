@@ -1,0 +1,1 @@
+// Svelte reactive store for current user state shared across UI components. Contains current user profile, authentication status, active workspace, and real-time user data. Components subscribe to get instant updates when user data changes, enabling reactive UI updates without prop drilling.

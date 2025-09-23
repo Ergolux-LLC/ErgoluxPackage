@@ -1,0 +1,1 @@
+// Ensures data integrity and validates data consistency across cache layers. Validates data schemas, checks referential integrity, and detects corrupted cache data. Provides functions like validateUserData(), checkCacheConsistency(), and sanitizeInput() to maintain data quality and prevent errors.

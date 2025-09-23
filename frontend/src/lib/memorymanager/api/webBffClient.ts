@@ -1,0 +1,1 @@
+// HTTP client for all web-BFF API communications. Handles authentication headers, request/response formatting, error handling, and retry logic. Provides methods like login(), getContacts(), createTransaction() that match web-BFF endpoints. Manages API base URLs, timeout handling, and response data transformation.

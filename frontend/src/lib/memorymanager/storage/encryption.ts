@@ -1,0 +1,1 @@
+// Handles encryption/decryption of sensitive business data before storing in browser. Uses Web Crypto API for client-side encryption of contact details, transaction amounts, and personal information. Manages encryption keys per user workspace, implements secure key derivation, and provides transparent encrypt-on-store/decrypt-on-retrieve operations.

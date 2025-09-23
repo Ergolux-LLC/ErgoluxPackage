@@ -4,57 +4,66 @@
   let error: string | null = null;
   let loading = false;
 
+  import { apiClient } from "$lib/api/client";
+
   async function handleSubmit(event: Event) {
     event.preventDefault();
     error = null;
     loading = true;
-    console.log("Login attempt started with email:", email);
-
-    const formData = new FormData();
-    formData.append("email", email);
-    formData.append("password", password);
-
-    let res;
-    try {
-      res = await fetch("/formapi", {
-        method: "POST",
-        body: formData,
-      });
-      console.log("Received response from /formapi:", res.status);
-    } catch (fetchErr) {
-      console.error("Network error during login:", fetchErr);
-      error = "Network error. Please try again.";
-      loading = false;
-      return;
-    }
+    console.log("[LOGIN] Attempt started", { email });
 
     let data;
     try {
-      data = await res.json();
-      console.log("Parsed JSON response:", data);
-    } catch (e) {
-      console.error("Failed to parse JSON response:", e);
-      error = "Unexpected server response. Please try again.";
+      data = await apiClient.login(email, password);
+      console.log("[LOGIN] API response:", data);
+    } catch (fetchErr) {
+      console.error("[LOGIN] Network or unexpected error:", fetchErr);
+      error = `Network error during login: ${fetchErr instanceof Error ? fetchErr.message : fetchErr}`;
       loading = false;
       return;
     }
     loading = false;
 
-    if (data.success && data.workspace) {
-      window.location.href = `${window.location.protocol}//${data.workspace}.app.ergolux.io.localhost:5173/directory`;
-    } else if (data.success) {
-      window.location.href = "/directory";
-    } else if (data.error) {
-      if (data.error === "Login failed") {
-        error = "Incorrect email or password.";
-        console.warn("Login failed: Incorrect credentials.");
+    if (data && (data.success || data.access_token)) {
+      console.log(
+        "[LOGIN] Success, redirecting to /dashboard (no cookie wait)",
+      );
+      window.location.href = "/dashboard";
+    } else if (data && data.error) {
+      // Handle validation errors (422)
+      if (
+        data.debug &&
+        data.debug.status === 422 &&
+        data.detail &&
+        Array.isArray(data.detail)
+      ) {
+        // Show the first missing field or a summary
+        const missingFields = data.detail
+          .filter((d: any) => d.msg && d.msg.toLowerCase().includes("required"))
+          .map((d: any) => (d.loc && d.loc.length > 1 ? d.loc[1] : null))
+          .filter(Boolean);
+        if (missingFields.length > 0) {
+          error = `Please enter your ${missingFields.join(" and ")}.`;
+        } else {
+          error =
+            "Some required fields are missing. Please check your input and try again.";
+        }
+        console.warn("[LOGIN] Validation error:", data.detail);
+      } else if (data.error === "Login failed") {
+        error =
+          "Incorrect email or password. Please check your credentials and try again.";
+        console.warn("[LOGIN] Login failed: Incorrect credentials.");
+      } else if (data.debug && data.debug.status) {
+        error = `Login failed: Server error: ${data.debug.status} ${data.debug.statusText || ""}`;
+        console.warn("[LOGIN] Login failed:", data.error, data.debug);
       } else {
-        error = data.error;
-        console.warn("Login failed:", data.error);
+        error = `Login failed: ${data.error}`;
+        console.warn("[LOGIN] Login failed:", data.error);
       }
     } else {
-      error = "Login failed. Please check your credentials and try again.";
-      console.warn("Login failed: Unknown error.");
+      error =
+        "Login failed due to an unknown error. Please try again or contact support.";
+      console.warn("[LOGIN] Login failed: Unknown error.", data);
     }
   }
 </script>

@@ -22,12 +22,23 @@ class PostgresUserAdapter(RelationalRepository):
 
     def get_user_by_email(self, email: str) -> Optional[User]:
         logger.debug("Fetching user by email: %s", email)
-        stmt = select(users).where(users.c.email == email).limit(1)
-        result = self.session.execute(stmt).first()
-        logger.debug("Query result: %s", result)
-        if result is None:
-            return None
-        return User.from_row(result)
+        try:
+            stmt = select(users).where(users.c.email == email).limit(1)
+            result = self.session.execute(stmt).first()
+            logger.debug("Query result: %s", result)
+            if result is None:
+                return None
+            return User.from_row(result)
+        except Exception as e:
+            logger.error("Database error in get_user_by_email: %s", str(e))
+            # Try to rollback the transaction
+            try:
+                self.session.rollback()
+                logger.info("Transaction rolled back due to error")
+            except Exception as rollback_error:
+                logger.error("Failed to rollback transaction: %s", str(rollback_error))
+            # Re-raise the original exception so the caller can handle it
+            raise
 
     def get_user_by_id(self, user_id: UUID) -> Optional[User]:
         logger.debug("Fetching user by ID: %s", user_id)

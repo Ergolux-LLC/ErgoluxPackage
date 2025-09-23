@@ -10,10 +10,15 @@
   import DevTools from "$lib/components/DevTools.svelte";
   import EnvironmentBadge from "$lib/components/EnvironmentBadge.svelte";
   import { config, devLog } from "$lib/config/environment";
+  // Import memory manager for initialization
+  import { memoryManager } from "$lib/memorymanager";
 
   let { children, data } = $props();
 
   onMount(async () => {
+    // Initialize memory manager
+    memoryManager.initialize();
+
     // Bootstrap should be available from CDN
     if (typeof window !== "undefined" && (window as any).bootstrap) {
       devLog("Bootstrap loaded successfully from CDN");

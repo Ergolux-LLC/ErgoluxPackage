@@ -1,0 +1,1 @@
+// Caches contact database with search indexing for instant lookups. Stores full contact list in IndexedDB, builds search indexes on name/email/company, and maintains filtered views (favorites, recent contacts). Provides instant search results, contact autocomplete, and relationship mapping between contacts and transactions.

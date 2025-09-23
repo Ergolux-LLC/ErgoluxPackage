@@ -1,0 +1,78 @@
+services:
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis_data:/data
+      - shared-service-logs:/app/logs
+    command: ["redis-server", "--appendonly", "yes"]
+    env_file:
+      - .env
+    networks:
+      - shared_services
+      - service_network
+
+  # cockroach:
+  #   image: cockroachdb/cockroach:v24.1.2
+  #   container_name: cockroachdb_service
+  #   command: start-single-node --insecure --store=volume1
+  #   ports:
+  #     - "26257:26257"
+  #     - "8080:8080"
+  #   restart: unless-stopped
+  #   networks:
+  #     - shared_services
+  #   volumes:
+  #     - cockroach-data:/cockroach/cockroach-data
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres_service
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: devdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - shared-service-logs:/app/logs
+    networks:
+      - shared_services
+      - service_network
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672" # AMQP protocol
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: devuser
+      RABBITMQ_DEFAULT_PASS: devpass
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - shared-service-logs:/app/logs
+    networks:
+      - shared_services
+      - service_network
+
+volumes:
+  cockroach-data:
+  postgres-data:
+  redis_data:
+  rabbitmq_data:
+  shared-service-logs:
+    external: true
+    name: logging_service-logs
+
+networks:
+  shared_services:
+    external: true
+  service_network:
+    external: true

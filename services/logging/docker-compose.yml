@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  loki:
+    image: grafana/loki:2.9.4
+    container_name: ergolux_loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yaml:/tmp/loki-config.yaml:ro
+      - loki-data:/loki
+    command: -config.file=/tmp/loki-config.yaml
+    restart: unless-stopped
+    networks:
+      - service_network
+
+  promtail:
+    image: grafana/promtail:2.9.4
+    container_name: ergolux_promtail
+    volumes:
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+      - service-logs:/app/logs
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    restart: unless-stopped
+    networks:
+      - service_network
+
+  grafana:
+    image: grafana/grafana:10.2.3
+    container_name: ergolux_grafana
+    ports:
+      - "33000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - loki
+    restart: unless-stopped
+    networks:
+      - service_network
+
+volumes:
+  loki-data:
+  grafana-data:
+  service-logs:
+
+networks:
+  service_network:
+    external: true

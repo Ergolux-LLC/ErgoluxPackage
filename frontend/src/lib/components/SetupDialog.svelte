@@ -22,7 +22,7 @@
 
     if (apiClient.isAuthenticated()) {
       // User is logged in, go to dashboard
-      goto("/directory");
+      goto("/dashboard");
     } else {
       // User needs to log in manually
       goto("/login");
@@ -296,7 +296,7 @@
       if (!result.valid) {
         console.log(
           "[SETUP DIALOG] Code validation failed, error:",
-          result.error
+          result.error,
         );
         error =
           result.error || "Invalid or expired code. Please go back to signup.";
@@ -306,7 +306,7 @@
       }
 
       console.log(
-        "[SETUP DIALOG] Code validation passed, proceeding with setup"
+        "[SETUP DIALOG] Code validation passed, proceeding with setup",
       );
       email = result.email || "";
       workspace_id = result.workspace_id || null;

@@ -1,0 +1,1 @@
+// Web Worker that builds and maintains search indexes without blocking UI thread. Processes contact data to build searchable indexes, maintains autocomplete databases, and performs complex search operations. Handles large dataset processing, fuzzy search algorithms, and search ranking calculations in background.

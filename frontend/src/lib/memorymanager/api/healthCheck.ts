@@ -1,0 +1,1 @@
+// Monitors web-BFF service availability and network connectivity. Periodically pings health endpoints, detects service outages, and provides connectivity status to other components. Implements circuit breaker patterns, reports service health to UI, and manages fallback behaviors when services are unavailable.

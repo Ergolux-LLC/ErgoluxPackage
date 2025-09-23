@@ -1,0 +1,1 @@
+// Web Worker that runs data synchronization in background thread without blocking UI. Performs heavy sync operations, processes large data updates, and handles bulk data transfers without affecting user interface responsiveness. Communicates with main thread via message passing, manages its own network requests, and reports sync progress.

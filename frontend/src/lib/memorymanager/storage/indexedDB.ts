@@ -1,0 +1,1 @@
+// Manages browser IndexedDB operations for complex data with query capabilities. Handles storing large datasets like contact lists, transaction history, and documents. Provides functions like storeContacts(), queryTransactions(), indexDocuments(). Implements database schema management, index creation, and transaction handling for reliable data operations.

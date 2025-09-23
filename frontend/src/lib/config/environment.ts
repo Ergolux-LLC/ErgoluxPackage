@@ -37,8 +37,8 @@ export const config = {
   
   // API configuration
   api: {
-    baseUrl: PUBLIC_API_BASE_URL || 'http://localhost:8050',
-    humanServiceUrl: PUBLIC_HUMAN_SERVICE_URL || 'http://localhost:8004',
+    baseUrl: PUBLIC_API_BASE_URL || 'http://web_bff:8000',
+    humanServiceUrl: PUBLIC_HUMAN_SERVICE_URL || 'http://human_service:8000',
     timeout: dev ? 10000 : 30000 // 10s for dev, 30s for prod
   },
   

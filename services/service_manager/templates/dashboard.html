@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{.title}}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <style>
+      .service-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid #6c757d;
+      }
+      .service-card.running {
+        border-left-color: #28a745;
+      }
+      .service-card.stopped {
+        border-left-color: #dc3545;
+      }
+      .service-card.partial {
+        border-left-color: #ffc107;
+      }
+      .service-card.error {
+        border-left-color: #dc3545;
+      }
+      .status-badge {
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+      .container-info {
+        font-size: 0.875rem;
+      }
+      .logs-modal .modal-body {
+        max-height: 60vh;
+        overflow-y: auto;
+      }
+      .logs-content {
+        font-family: "Courier New", monospace;
+        font-size: 0.875rem;
+        white-space: pre-wrap;
+        background-color: #1e1e1e;
+        color: #ffffff;
+        padding: 1rem;
+        border-radius: 0.375rem;
+      }
+      .refresh-indicator {
+        display: none;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+      }
+      .action-buttons {
+        gap: 0.5rem;
+      }
+      .navbar-brand {
+        font-weight: 600;
+      }
+      .service-actions {
+        display: flex;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+      }
+      .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+      }
+      @media (max-width: 768px) {
+        .service-actions {
+          flex-direction: column;
+        }
+        .service-actions .btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark">
+      <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">
+          <i class="bi bi-gear-fill me-2"></i>
+          Service Manager Dashboard
+        </span>
+        <div class="d-flex align-items-center">
+          <button
+            class="btn btn-outline-light btn-sm me-2"
+            onclick="refreshAll()"
+          >
+            <i class="bi bi-arrow-clockwise"></i>
+            Refresh All
+          </button>
+          <span class="text-light small" id="lastUpdate"
+            >Last updated: --:--</span
+          >
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+      <div class="refresh-indicator" id="refreshIndicator">
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+          <i class="bi bi-arrow-clockwise me-2"></i>
+          Refreshing services...
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+          ></button>
+        </div>
+      </div>
+
+      <div class="row" id="servicesContainer">
+        <div class="col-12 text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3 text-muted">Loading services...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logs Modal -->
+    <div class="modal fade logs-modal" id="logsModal" tabindex="-1">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bi bi-file-text me-2"></i>
+              Service Logs: <span id="logsServiceName"></span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <label for="linesSelect" class="form-label"
+                  >Number of lines:</label
+                >
+                <select
+                  class="form-select form-select-sm d-inline-block w-auto"
+                  id="linesSelect"
+                >
+                  <option value="50">50</option>
+                  <option value="100" selected>100</option>
+                  <option value="200">200</option>
+                  <option value="500">500</option>
+                </select>
+              </div>
+              <button
+                class="btn btn-outline-secondary btn-sm"
+                onclick="refreshLogs()"
+              >
+                <i class="bi bi-arrow-clockwise me-1"></i>
+                Refresh
+              </button>
+            </div>
+            <div class="logs-content" id="logsContent">Loading logs...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      let ws;
+      let currentLogsService = null;
+
+      // WebSocket connection for real-time updates
+      function connectWebSocket() {
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        const wsUrl = `${protocol}//${window.location.host}/ws`;
+
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = function () {
+          console.log("WebSocket connected");
+        };
+
+        ws.onmessage = function (event) {
+          const services = JSON.parse(event.data);
+          updateServiceCards(services);
+          updateLastUpdateTime();
+        };
+
+        ws.onclose = function () {
+          console.log("WebSocket disconnected, attempting to reconnect...");
+          setTimeout(connectWebSocket, 5000);
+        };
+
+        ws.onerror = function (error) {
+          console.error("WebSocket error:", error);
+        };
+      }
+
+      // Initialize WebSocket connection
+      connectWebSocket();
+
+      function updateServiceCards(services) {
+        const container = document.getElementById("servicesContainer");
+
+        if (services.length === 0) {
+          container.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="bi bi-inbox display-1 text-muted"></i>
+                        <h4 class="text-muted mt-3">No services found</h4>
+                        <p class="text-muted">No Docker Compose services were discovered in the project.</p>
+                    </div>
+                `;
+          return;
+        }
+
+        container.innerHTML = services
+          .map(
+            (service) => `
+                <div class="col-xl-4 col-lg-6 col-md-12 mb-4">
+                    <div class="card service-card ${service.status} h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-box me-2"></i>
+                                ${service.name}
+                            </h5>
+                            <span class="badge status-badge ${getStatusBadgeClass(
+                              service.status
+                            )}">
+                                ${getStatusIcon(
+                                  service.status
+                                )} ${service.status.toUpperCase()}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-folder me-1"></i>
+                                    ${service.path.replace(
+                                      /.*\/services\//,
+                                      "services/"
+                                    )}
+                                </small>
+                            </div>
+                            
+                            ${
+                              service.containers &&
+                              service.containers.length > 0
+                                ? `
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">
+                                        <i class="bi bi-cpu me-1"></i>
+                                        Containers (${
+                                          service.containers.length
+                                        })
+                                    </h6>
+                                    ${service.containers
+                                      .map(
+                                        (container) => `
+                                        <div class="container-info mb-2 p-2 bg-light rounded">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fw-medium">${
+                                                  container.name
+                                                }</span>
+                                                <span class="badge ${getContainerStatusBadge(
+                                                  container.status
+                                                )}">
+                                                    ${container.status}
+                                                </span>
+                                            </div>
+                                            ${
+                                              container.port
+                                                ? `
+                                                <small class="text-muted">
+                                                    <i class="bi bi-globe me-1"></i>
+                                                    Port: ${container.port}
+                                                </small>
+                                            `
+                                                : ""
+                                            }
+                                            ${
+                                              container.health &&
+                                              container.health !== "undefined"
+                                                ? `
+                                                <br><small class="text-muted">
+                                                    <i class="bi bi-heart-pulse me-1"></i>
+                                                    Health: ${container.health}
+                                                </small>
+                                            `
+                                                : ""
+                                            }
+                                        </div>
+                                    `
+                                      )
+                                      .join("")}
+                                </div>
+                            `
+                                : ""
+                            }
+                            
+                            <div class="service-actions">
+                                <button class="btn btn-success btn-sm" onclick="startService('${
+                                  service.name
+                                }')" 
+                                        ${
+                                          service.status === "running"
+                                            ? "disabled"
+                                            : ""
+                                        }>
+                                    <i class="bi bi-play-fill me-1"></i>
+                                    Start
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="stopService('${
+                                  service.name
+                                }')"
+                                        ${
+                                          service.status === "stopped"
+                                            ? "disabled"
+                                            : ""
+                                        }>
+                                    <i class="bi bi-stop-fill me-1"></i>
+                                    Stop
+                                </button>
+                                <button class="btn btn-warning btn-sm" onclick="restartService('${
+                                  service.name
+                                }')"
+                                        ${
+                                          service.status === "stopped"
+                                            ? "disabled"
+                                            : ""
+                                        }>
+                                    <i class="bi bi-arrow-clockwise me-1"></i>
+                                    Restart
+                                </button>
+                                <button class="btn btn-info btn-sm" onclick="showLogs('${
+                                  service.name
+                                }')">
+                                    <i class="bi bi-file-text me-1"></i>
+                                    Logs
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i>
+                                Last checked: ${new Date(
+                                  service.last_checked
+                                ).toLocaleTimeString()}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      function getStatusBadgeClass(status) {
+        switch (status) {
+          case "running":
+            return "bg-success";
+          case "stopped":
+            return "bg-secondary";
+          case "partial":
+            return "bg-warning text-dark";
+          case "error":
+            return "bg-danger";
+          default:
+            return "bg-secondary";
+        }
+      }
+
+      function getStatusIcon(status) {
+        switch (status) {
+          case "running":
+            return '<i class="bi bi-play-circle-fill"></i>';
+          case "stopped":
+            return '<i class="bi bi-stop-circle-fill"></i>';
+          case "partial":
+            return '<i class="bi bi-exclamation-triangle-fill"></i>';
+          case "error":
+            return '<i class="bi bi-x-circle-fill"></i>';
+          default:
+            return '<i class="bi bi-question-circle-fill"></i>';
+        }
+      }
+
+      function getContainerStatusBadge(status) {
+        switch (status) {
+          case "running":
+            return "bg-success";
+          case "exited":
+            return "bg-secondary";
+          case "paused":
+            return "bg-warning text-dark";
+          case "restarting":
+            return "bg-info text-dark";
+          default:
+            return "bg-secondary";
+        }
+      }
+
+      function updateLastUpdateTime() {
+        document.getElementById(
+          "lastUpdate"
+        ).textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+      }
+
+      function showRefreshIndicator() {
+        document.getElementById("refreshIndicator").style.display = "block";
+        setTimeout(() => {
+          document.getElementById("refreshIndicator").style.display = "none";
+        }, 2000);
+      }
+
+      async function serviceAction(action, serviceName) {
+        showRefreshIndicator();
+
+        try {
+          const response = await fetch(
+            `/api/services/${serviceName}/${action}`,
+            {
+              method: "POST",
+            }
+          );
+
+          const result = await response.json();
+
+          if (response.ok) {
+            console.log(result.message);
+          } else {
+            console.error("Error:", result.error);
+            alert(`Error: ${result.error}`);
+          }
+        } catch (error) {
+          console.error("Network error:", error);
+          alert("Network error occurred");
+        }
+      }
+
+      function startService(serviceName) {
+        serviceAction("start", serviceName);
+      }
+
+      function stopService(serviceName) {
+        serviceAction("stop", serviceName);
+      }
+
+      function restartService(serviceName) {
+        serviceAction("restart", serviceName);
+      }
+
+      async function refreshAll() {
+        showRefreshIndicator();
+
+        try {
+          const response = await fetch("/api/services");
+          const services = await response.json();
+          updateServiceCards(services);
+          updateLastUpdateTime();
+        } catch (error) {
+          console.error("Error refreshing services:", error);
+        }
+      }
+
+      async function showLogs(serviceName) {
+        currentLogsService = serviceName;
+        document.getElementById("logsServiceName").textContent = serviceName;
+
+        const modal = new bootstrap.Modal(document.getElementById("logsModal"));
+        modal.show();
+
+        await refreshLogs();
+      }
+
+      async function refreshLogs() {
+        if (!currentLogsService) return;
+
+        const lines = document.getElementById("linesSelect").value;
+        const logsContent = document.getElementById("logsContent");
+
+        logsContent.textContent = "Loading logs...";
+
+        try {
+          const response = await fetch(
+            `/api/services/${currentLogsService}/logs?lines=${lines}`
+          );
+          const result = await response.json();
+
+          if (response.ok) {
+            logsContent.textContent = result.logs || "No logs available";
+          } else {
+            logsContent.textContent = `Error loading logs: ${result.error}`;
+          }
+        } catch (error) {
+          logsContent.textContent = `Network error: ${error.message}`;
+        }
+      }
+
+      // Auto-refresh logs when lines selection changes
+      document
+        .getElementById("linesSelect")
+        .addEventListener("change", refreshLogs);
+
+      // Initial load
+      refreshAll();
+    </script>
+  </body>
+</html>

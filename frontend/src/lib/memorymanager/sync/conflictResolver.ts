@@ -1,0 +1,1 @@
+// Handles data conflicts when the same record is modified simultaneously by multiple sources. Implements conflict resolution strategies: last-write-wins for simple updates, user prompts for critical business data, and automatic merging for non-conflicting changes. Maintains version tracking, provides conflict history, and ensures data integrity during merges.

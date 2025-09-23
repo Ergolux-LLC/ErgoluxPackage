@@ -19,8 +19,28 @@ async def login(
     keyvalue_adapter,
     AuthResponse
 ):
-    user = database_adapter.get_user_by_email(email)
-    if not user or not verify_password(password, user.hashed_password):
+    try:
+        user = database_adapter.get_user_by_email(email)
+    except Exception as e:
+        logger.error("Database error while fetching user: %s", str(e))
+        return AuthResponse(
+            user=None,
+            tokens=None,
+            error="Database unavailable. Please try again later.",
+            status_code=503
+        )
+    
+    if not user:
+        logger.info("User not found for email: %s", email)
+        return AuthResponse(
+            user=None,
+            tokens=None,
+            error="Invalid email or password",
+            status_code=401
+        )
+    
+    if not verify_password(password, user.hashed_password):
+        logger.info("Invalid password for email: %s", email)
         return AuthResponse(
             user=None,
             tokens=None,
@@ -47,17 +67,27 @@ async def login(
         session_id=session_id
     )
 
-    redis_key = f"user:tokens:{user.id}:{device_id}"
+    redis_key = f"user:tokens:{str(user.id)}:{device_id}"
     redis_value = json.dumps(access_token_obj.__dict__)
 
-    await keyvalue_adapter.set_token(redis_key, redis_value, ex=access_token_ttl)
+    await keyvalue_adapter.set_token(redis_key, redis_value, ex=refresh_token_ttl)
+
+    # FIXED: Also store refresh token as direct key for reverse lookup during refresh
+    refresh_lookup_data = {
+        "user_id": str(user.id),  # Convert UUID to string for JSON serialization
+        "device_id": device_id,
+        "redis_key": redis_key  # So we can find the full token data
+    }
+    refresh_lookup_value = json.dumps(refresh_lookup_data)
+    await keyvalue_adapter.set_token(refresh_token, refresh_lookup_value, ex=refresh_token_ttl)
 
     stored_value = await keyvalue_adapter.get_token(redis_key)
     logger.info("Stored token in Redis: key=%s, value=%s", redis_key, stored_value)
+    logger.info("Stored refresh lookup: token=%s..., data=%s", refresh_token[:20], refresh_lookup_value)
 
     return AuthResponse(
         user={
-            "id": user.id,
+            "id": str(user.id),  # Convert UUID to string for JSON serialization
             "email": user.email,
             "name": f"{getattr(user, 'first_name', '')} {getattr(user, 'last_name', '')}".strip()
         },

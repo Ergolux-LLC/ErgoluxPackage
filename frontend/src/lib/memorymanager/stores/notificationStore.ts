@@ -1,0 +1,1 @@
+// Svelte reactive store for real-time notifications and alerts. Contains unread notifications, system alerts, task reminders, and real-time updates. Manages notification state, badge counts, and provides reactive notification UI that updates instantly when new notifications arrive.

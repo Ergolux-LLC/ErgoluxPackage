@@ -1,0 +1,1 @@
+// Runs continuous background synchronization with the web-BFF server. Polls for data updates every 30 seconds, handles network failures gracefully, and queues offline changes for when connectivity returns. Implements exponential backoff for failed requests, manages sync state (syncing, idle, error), and coordinates with other sync components.

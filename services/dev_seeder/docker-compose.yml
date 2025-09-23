@@ -1,0 +1,18 @@
+services:
+  dev_seeder:
+    build: .
+    container_name: dev_seeder
+    environment:
+      - ENVIRONMENT=development
+      - AUTH_SERVICE_URL=http://auth_service:8000
+    networks:
+      - service_network
+    volumes:
+      - ./app:/app/app:ro
+    profiles:
+      - seeding
+      - dev-full
+
+networks:
+  service_network:
+    external: true

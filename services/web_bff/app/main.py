@@ -1,5 +1,22 @@
 import logging
-logging.basicConfig(level=logging.DEBUG)
+import os
+from pathlib import Path
+
+# Configure logging with file output for log aggregation
+log_dir = Path("/app/logs")
+log_dir.mkdir(exist_ok=True)
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s %(levelname)s:%(name)s:%(message)s',
+    handlers=[
+        logging.FileHandler('/app/logs/web_bff.log'),
+        logging.StreamHandler()  # Keep console output for development
+    ]
+)
+
+logger = logging.getLogger(__name__)
+logger.info("Starting Web BFF service with file logging enabled")
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -21,7 +38,13 @@ app = FastAPI()
 if os.getenv("ENV", "dev").lower() == "dev":
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:8080"],  # Specific origins for credentials
+        allow_origins=[
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "http://localhost:8080",
+            "http://app.ergolux.io.localhost:5173",
+            "https://app.ergolux.io.localhost:5173"
+        ],  # Add all dev frontend origins for credentials
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

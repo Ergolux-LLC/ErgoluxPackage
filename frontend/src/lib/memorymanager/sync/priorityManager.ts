@@ -1,0 +1,1 @@
+// Determines which data to sync first based on user behavior and business rules. Prioritizes active user data over historical records, recent contacts over archived ones, and current transactions over completed deals. Learns from user patterns (which contacts they access most), adjusts priorities dynamically, and manages sync queue ordering.

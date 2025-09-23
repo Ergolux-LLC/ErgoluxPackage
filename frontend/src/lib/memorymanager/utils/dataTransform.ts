@@ -1,0 +1,1 @@
+// Converts data between different formats used by API, cache, and UI components. Transforms web-BFF response format to local cache format, normalizes data structures, and handles API version differences. Provides functions like apiToCache(), cacheToUI(), and normalizeContact() for consistent data handling.

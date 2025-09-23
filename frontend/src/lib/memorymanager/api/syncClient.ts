@@ -1,0 +1,1 @@
+// Specialized HTTP client for data synchronization endpoints. Handles sync-specific requests like checking for updates since timestamp, uploading queued changes, and requesting bulk data refreshes. Manages sync tokens, incremental update requests, and conflict detection during sync operations.

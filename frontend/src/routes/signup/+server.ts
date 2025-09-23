@@ -1,12 +1,15 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { API_BASE_URL, DEFAULT_HEADERS } from '$lib/api/config';
+import { serverConfig } from '$lib/config/server';
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const body = await request.text();
-    const res = await fetch(`${API_BASE_URL}/account-setup/signup`, {
+    const res = await fetch(`${serverConfig.api.baseUrl}/account-setup/signup`, {
       method: 'POST',
-      headers: DEFAULT_HEADERS,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
       body,
     });
     const data = await res.text();

@@ -1,0 +1,37 @@
+services:
+  frontend:
+    build: .
+    ports:
+      - "80:5173" # Map port 80 (no port needed) to container's 5173
+    env_file:
+      - .env.docker
+    volumes:
+      # Mount source code for hot reloading
+      - ./src:/app/src
+      - ./static:/app/static
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - ./vite.config.ts:/app/vite.config.ts
+      - ./svelte.config.js:/app/svelte.config.js
+      - ./tsconfig.json:/app/tsconfig.json
+      # Exclude node_modules to avoid conflicts
+      # (Do NOT mount /app/node_modules, it will break dependencies in Docker)
+      # Mount shared logging volume
+      - logging_service-logs:/app/logs
+    environment:
+      - NODE_ENV=development
+      - VITE_HOST=0.0.0.0
+    networks:
+      - service_network
+    restart: unless-stopped
+    labels:
+      - "service.name=frontend"
+      - "service.type=web"
+
+networks:
+  service_network:
+    external: true
+
+volumes:
+  logging_service-logs:
+    external: true

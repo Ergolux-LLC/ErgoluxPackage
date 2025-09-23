@@ -8,8 +8,10 @@ This is a microservices-based SaaS platform for transaction professionals (real 
 
 1. **Auto-generated DB services** (`services/db/`) - CRUD microservices generated from schema definitions
 2. **Auth service** (`services/auth/`) - Clean architecture with domain/application/infrastructure layers
-3. **Other services** (`services/web_bff/`, `services/account_setup/`) - FastAPI + Pydantic with simple structure
-4. **Frontend** (`frontend/`) - Vite/SvelteKit app with TypeScript, Bootstrap, and environment-aware configuration
+3. **Service Manager** (`services/service_manager/`) - Go-based web dashboard for service management
+4. **Shared Infrastructure** (`infrastructure/shared-services/`) - Redis, PostgreSQL, RabbitMQ
+5. **Other services** (`services/web_bff/`, `services/account_setup/`) - FastAPI + Pydantic with simple structure
+6. **Frontend** (`frontend/`) - Vite/SvelteKit app with TypeScript, Bootstrap, and environment-aware configuration
 
 ### Auto-Generated DB Services
 
@@ -40,6 +42,92 @@ This is a microservices-based SaaS platform for transaction professionals (real 
 - Example: `services/account_setup/` uses basic routes.py + models.py structure
 - No domain/application layer separation
 
+### Service Manager
+
+**Pattern:** Go + Gin web framework with Bootstrap 5 UI (`services/service_manager/`)
+
+- Web-based dashboard for managing all Docker Compose services in the project
+- Automatic service discovery from `services/`, `infrastructure/shared-services/`, and `frontend/`
+- Real-time status monitoring via WebSocket connections
+- Docker CLI integration for start/stop/restart operations
+- Log viewing interface with configurable line counts
+
+**Usage:**
+
+```bash
+cd services/service_manager && ./dev.sh    # Development mode
+cd services/service_manager && ./start.sh  # Docker deployment
+```
+
+**Access:** Web dashboard at `http://localhost:9000`
+
+### Shared Services Infrastructure
+
+**Pattern:** Centralized infrastructure services (`infrastructure/shared-services/`)
+
+- Redis (port 6379) - Session storage and caching for auth service
+- PostgreSQL (port 5432) - Shared database for cross-service data
+- RabbitMQ (ports 5672, 15672) - Message queuing with management UI
+- All services connected to `service_network` and `shared_services` networks
+- Integrated with centralized logging via `logging_service-logs` volume
+
+**Management:**
+
+```bash
+cd infrastructure/shared-services && docker-compose up -d    # Start all
+cd infrastructure/shared-services && docker-compose down    # Stop all
+```
+
+**Dependencies:** Services requiring Redis (like auth) depend on shared-services being running
+
+### Logging Aggregation
+
+**Pattern:** Centralized log collection via Loki + Promtail + Grafana
+
+- `services/logging/` - Log aggregation infrastructure with Loki (storage), Promtail (collection), Grafana (visualization)
+- All services write logs to shared volume `logging_service-logs` mounted at `/app/logs/`
+- Service-specific log files: `/app/logs/{service_name}.log`
+- Access logs via `./logs.sh` script with commands: `query`, `tail`, `query {service_name}`
+
+**Adding logging to new services:**
+
+1. **Configure logging in main.py:**
+
+```python
+import logging
+import os
+
+# Create logs directory
+os.makedirs("/app/logs", exist_ok=True)
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s:%(name)s:%(message)s",
+    handlers=[
+        logging.StreamHandler(),  # Console output
+        logging.FileHandler("/app/logs/{service_name}.log")  # File output
+    ]
+)
+```
+
+2. **Mount shared volume in docker-compose.yml:**
+
+```yaml
+volumes:
+  - logging_service-logs:/app/logs
+```
+
+3. **Add external volume reference:**
+
+```yaml
+volumes:
+  logging_service-logs:
+    external: true
+```
+
+**Log viewing:** Use `cd services/logging && ./logs.sh query {service_name}` for service-specific logs or `./logs.sh tail` for real-time monitoring
+
 ### Critical Development Commands
 
 **Generate new CRUD service:**
@@ -62,10 +150,19 @@ This reads `tables.py` schema and generates complete service in `services/db/[ta
 **Development workflow:**
 
 ```bash
-cd frontend && npm run dev        # Development mode
+cd frontend && npm run dev        # Development mode (direct)
 cd frontend && npm run dev:prod   # Production mode locally
 cd frontend && ./dev.sh          # Alternative dev script with port management
+cd frontend && docker-compose up -d  # Docker service with hot reloading
 ```
+
+**Docker service features:**
+
+- Containerized Vite development server with immediate file change response
+- Volume mounts for hot reloading: `src/`, `static/`, config files
+- Integrated with centralized logging via `/app/logs/frontend.log`
+- Optimized Vite config with polling for Docker file watching
+- Service discovery via `service_network` and managed by service manager
 
 **Key frontend features:**
 

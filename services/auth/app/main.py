@@ -1,7 +1,6 @@
 import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-from app.common.utility import hash_password
 import os
 import asyncio
 from contextlib import asynccontextmanager
@@ -11,7 +10,6 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Literal
 from sqlalchemy import text
-from uuid import UUID
 
 from app.common import config as config_module
 from app.infrastructure.routers.auth import get_router as get_auth_router
@@ -72,23 +70,6 @@ async def retry_postgres_check():
                 logger.error("🔥 Postgres failed after %d attempts", MAX_RETRIES)
                 raise
 
-
-
-def devsetup():
-    relational_db_adapter.reset_database()
-    logger.info("database reset")
-
-    logger.info("creating dev user")
-    password_hash = hash_password("devpassword123")
-    user = relational_db_adapter.create_user(
-        email="dev@example.com",
-        password_hash=password_hash,
-        first_name="Dev",
-        last_name="User",
-        user_id = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-    )
-    logger.info("dev user created: %s (%s)", user.id, user.email)
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
@@ -100,9 +81,18 @@ async def lifespan(app: FastAPI):
     await retry_redis_check()
 
     await retry_postgres_check()
+    
+    # Initialize database tables if needed
+    try:
+        from app.infrastructure.db.metadata import metadata
+        bind = relational_db_adapter.session.get_bind()
+        metadata.create_all(bind=bind)
+        logger.info("🗄️ Database tables initialized")
+    except Exception as e:
+        logger.error("Failed to initialize database tables: %s", str(e))
+        
     logger.info (config.get("ENVIRONMENT"))
-    if config.get("ENVIRONMENT") == "development":
-        devsetup()
+    
     yield  # App is now ready
 
     logger.info("📦 Shutting down... cleaning up connections")

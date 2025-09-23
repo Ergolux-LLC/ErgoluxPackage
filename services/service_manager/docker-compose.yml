@@ -1,0 +1,42 @@
+services:
+  service_manager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: service_manager
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Docker socket for managing containers
+      - ../../:/workspace:ro # Mount the entire project as read-only
+    ports:
+      - "9000:9000"
+    environment:
+      - PORT=9000
+      - GIN_MODE=release
+    networks:
+      - service_network
+    depends_on: []
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:9000/",
+          "||",
+          "exit",
+          "1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes: {}
+
+networks:
+  service_network:
+    external: true

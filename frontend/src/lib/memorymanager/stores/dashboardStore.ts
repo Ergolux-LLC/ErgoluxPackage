@@ -1,0 +1,1 @@
+// Svelte reactive store for live dashboard metrics and chart data. Contains commission totals, deal pipeline status, performance metrics, and chart datasets. Provides real-time dashboard updates, automatic chart re-rendering when data changes, and shared metrics across multiple dashboard components.

@@ -8,6 +8,7 @@ services:
     working_dir: /app
     volumes:
       - ./app:/app
+      - service-logs:/app/logs
     ports:
       - "8601:8000"
     env_file:
@@ -32,6 +33,9 @@ services:
 
 volumes:
   postgres_data:
+  service-logs:
+    external: true
+    name: logging_service-logs
 
 networks:
   shared_services:

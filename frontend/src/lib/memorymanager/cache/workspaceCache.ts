@@ -1,0 +1,1 @@
+// Caches workspace settings, permissions, and team member data. Stores current workspace context, user roles and permissions, workspace-specific settings, and team directory. Enables instant workspace switching, permission checks without server calls, and workspace-scoped data filtering.

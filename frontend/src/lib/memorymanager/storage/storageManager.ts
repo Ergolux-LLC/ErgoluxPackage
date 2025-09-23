@@ -1,0 +1,1 @@
+// Monitors and manages browser storage quota across localStorage and IndexedDB. Implements LRU (Least Recently Used) eviction when storage limits are reached. Tracks storage usage by data type, manages priority-based eviction (keeps critical user data, removes old search results first), and provides storage health monitoring with warnings when approaching limits.

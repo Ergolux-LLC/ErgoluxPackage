@@ -1,0 +1,1 @@
+// Manages real-time WebSocket connections for instant cache invalidation and live updates. Connects to web-BFF WebSocket endpoint, handles connection failures and reconnection, and processes real-time events like "user profile updated" or "transaction status changed". Invalidates local caches immediately when server data changes.

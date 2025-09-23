@@ -1,0 +1,1 @@
+// Svelte reactive store for contact data used by UI components. Contains filtered contact lists, search results, selected contacts, and contact relationship data. Provides reactive contact lists that update instantly when contacts are added/modified, enabling real-time UI updates across contact-related components.

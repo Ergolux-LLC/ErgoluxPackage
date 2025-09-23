@@ -1,0 +1,1 @@
+// Web Worker that handles large data compression/decompression operations without blocking UI. Compresses transaction histories, document content, and large datasets before storage. Decompresses data when retrieved from cache. Manages CPU-intensive compression algorithms, handles large file processing, and provides progress updates for long-running operations.

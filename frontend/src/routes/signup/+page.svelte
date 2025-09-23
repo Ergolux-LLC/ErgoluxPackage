@@ -9,7 +9,7 @@
   console.log("[SIGNUP PAGE] config.api.baseUrl:", config.api.baseUrl);
   console.log(
     "[SIGNUP PAGE] window.location:",
-    typeof window !== "undefined" ? window.location.href : "server"
+    typeof window !== "undefined" ? window.location.href : "server",
   );
   if (typeof import.meta !== "undefined") {
     console.log("[SIGNUP PAGE] import.meta.env:", import.meta.env);
@@ -80,7 +80,7 @@
     logClient("PageInit", {
       url: window.location.href,
       params: Object.fromEntries(
-        new URLSearchParams(window.location.search).entries()
+        new URLSearchParams(window.location.search).entries(),
       ),
       isDev,
       config: config.app,
@@ -91,7 +91,7 @@
       "isDev",
       isDev,
       "config",
-      config
+      config,
     );
 
     // For easy testing in development mode
@@ -116,7 +116,7 @@
       "isDev",
       isDev,
       "config",
-      config
+      config,
     );
     isSubmitting = true;
     console.log("[SIGNUP PAGE] isSubmitting set to true");
@@ -167,13 +167,13 @@
     console.log("[SIGNUP PAGE] Getting dev code for:", userEmail);
 
     const encodedEmail = encodeURIComponent(userEmail);
-    const codeUrl = `http://localhost:8050/account-setup/dev/get-code/${encodedEmail}`;
+    const codeUrl = `${config.api.baseUrl}/account-setup/dev/get-code/${encodedEmail}`;
 
     const tryGetCode = async (): Promise<boolean> => {
       try {
         codeRetryCount++;
         console.log(
-          `[SIGNUP PAGE] Code attempt ${codeRetryCount}/${maxRetries}`
+          `[SIGNUP PAGE] Code attempt ${codeRetryCount}/${maxRetries}`,
         );
 
         const response = await fetch(codeUrl, {
@@ -193,7 +193,7 @@
           }
         } else {
           console.log(
-            `[SIGNUP PAGE] Code request failed: ${response.status} ${response.statusText}`
+            `[SIGNUP PAGE] Code request failed: ${response.status} ${response.statusText}`,
           );
         }
       } catch (error) {
@@ -217,7 +217,7 @@
       console.error(
         "[SIGNUP PAGE] Failed to get dev code after",
         maxRetries,
-        "attempts"
+        "attempts",
       );
     }
   }

@@ -11,8 +11,10 @@ declare namespace App {
 import { redirect, type RequestEvent } from "@sveltejs/kit";
 import type { LayoutServerLoad } from "./$types";
 
-const APPROVED_WORKSPACES = ["workspace1"];
-const PRIMARY_LOGIN_HOST = "app.ergolux.io.localhost"; // Change for production
+
+// Allow all subdomains and root for local development
+const APPROVED_WORKSPACES: string[] = [];
+const PRIMARY_LOGIN_HOST = "app.ergolux.io.localhost";
 const PRIMARY_LOGIN_URL = `http://${PRIMARY_LOGIN_HOST}:5173`;
 
 function getSubdomain(host: string): string | null {
@@ -40,18 +42,13 @@ function isPrimaryLogin(host: string): boolean {
 }
 
 function shouldRedirectToLogin(subdomain: string | null, host: string, pathname: string): boolean {
-    if (isPrimaryLogin(host)) {
-        console.log("[shouldRedirectToLogin] Primary login host, no redirect.");
-        return false;
-    }
+    // Only redirect if on a subdomain that is explicitly not allowed (never for root)
+    // For local dev, allow all subdomains and root
     if (pathname === "/login") {
         console.log("[shouldRedirectToLogin] /login always allowed, no redirect.");
         return false;
     }
-    if (subdomain && !APPROVED_WORKSPACES.includes(subdomain)) {
-        console.log("[shouldRedirectToLogin] Subdomain", subdomain, "not approved. Redirecting.");
-        return true;
-    }
+    // No redirect for root or any subdomain in dev
     console.log("[shouldRedirectToLogin] No redirect needed.");
     return false;
 }
@@ -66,43 +63,13 @@ function getWorkspaceAccess(subdomain: string | null) {
     };
 }
 
-function hasValidAuthCookie(event: RequestEvent): boolean {
-    const refreshToken = event.cookies.get("refresh_token");
-    const valid = !!refreshToken;
-    console.log("[hasValidAuthCookie] refresh_token:", refreshToken ? "PRESENT" : "MISSING", "Valid:", valid);
-    return valid;
-}
-
-function shouldCheckAuth(pathname: string): boolean {
-    const result = pathname === "/directory" || pathname === "/dashboard";
-    console.log("[shouldCheckAuth] Pathname:", pathname, "Should check auth:", result);
-    return result;
-}
 
 export const load: LayoutServerLoad = async (event) => {
-    const { locals, request, url } = event;
+    const { locals, request, url, cookies } = event;
     const host = request.headers.get("host") || "";
     const subdomain = getSubdomain(host);
-
-    console.log("[load] Host:", host, "Subdomain:", subdomain, "Pathname:", url.pathname);
-
-    if (shouldRedirectToLogin(subdomain, host, url.pathname)) {
-        console.log("[load] Redirecting to PRIMARY_LOGIN_URL:", PRIMARY_LOGIN_URL + "/login");
-        throw redirect(302, PRIMARY_LOGIN_URL + "/login");
-    }
-
-    if (shouldCheckAuth(url.pathname)) {
-        if (!hasValidAuthCookie(event)) {
-            console.log("[load] No valid auth cookie. Redirecting to /login.");
-            throw redirect(302, "/login");
-        }
-    }
-
     const access = getWorkspaceAccess(subdomain);
     locals.workspace = subdomain ?? "";
-
-    console.log("[load] Returning access info:", access, "User:", locals.user);
-
     return {
         ...access,
         user: locals.user,

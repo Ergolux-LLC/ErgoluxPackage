@@ -1,0 +1,1 @@
+// Measures and optimizes memory manager performance. Tracks cache hit rates, sync timing, storage usage, and response times. Provides performance metrics to development tools, identifies bottlenecks, and enables performance monitoring in production. Implements timing utilities and performance logging.

@@ -1,0 +1,1 @@
+// Optimizes data size for browser storage using compression algorithms. Compresses large datasets before storing in IndexedDB, decompresses on retrieval, and manages compression ratios vs. performance trade-offs. Particularly useful for document content, transaction history, and large contact lists.

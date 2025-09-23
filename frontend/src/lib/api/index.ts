@@ -1,12 +1,14 @@
 /**
- * API Client Exports
- * 
- * This file exports all API client modules for easier imports in other parts of the application.
+ * Main API exports
+ * Single import point for all API functionality
  */
 
-export * from './workspace';
+export { apiClient } from './client';
+export type { ApiResponse } from './client';
 
-// Will export other API clients as they are added, e.g.:
-// export * from './auth';
-// export * from './users';
-// export * from './projects';
+export * from './auth';
+
+// Future API modules will be exported here
+// export * from './contacts';
+// export * from './workspaces';
+// export * from './transactions';
