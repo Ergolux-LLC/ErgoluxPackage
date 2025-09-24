@@ -212,15 +212,48 @@
 
   // Handle mouse enter/leave for expansion
   function handleContainerMouseEnter() {
-    if (!isExpanded && !isDelayedClosing) {
-      // Start repositioning phase first
-      isRepositioning = true;
+    if (!isExpanded && !isRepositioning) {
+      // Get the positioning for the overlay using wrapper as reference
+      const container = document.querySelector(
+        ".context-switcher-container",
+      ) as HTMLElement;
+      const wrapper = document.querySelector(
+        ".context-switcher-wrapper",
+      ) as HTMLElement;
 
-      // After repositioning animation, start full expansion
-      setTimeout(() => {
-        isRepositioning = false;
-        isExpanded = true;
-      }, 200); // Duration of repositioning animation
+      if (container && wrapper) {
+        const wrapperRect = wrapper.getBoundingClientRect();
+
+        // Align overlay exactly to wrapper boundaries - no padding compensation needed
+        // Since we're using the same padding (0.5rem) across all states, position at 0,0
+
+        // Set positions for both phases - align exactly to wrapper edges
+        container.style.setProperty(
+          "--reposition-top",
+          "0px", // Exact alignment to wrapper top
+        );
+        container.style.setProperty(
+          "--reposition-left",
+          "0px", // Exact alignment to wrapper left
+        );
+
+        container.style.setProperty(
+          "--expand-top",
+          "0px", // Exact alignment to wrapper top
+        );
+        container.style.setProperty(
+          "--expand-left",
+          "0px", // Exact alignment to wrapper left
+        );
+
+        // Brief repositioning phase for smooth background transition, then expand
+        isRepositioning = true;
+
+        setTimeout(() => {
+          isRepositioning = false;
+          isExpanded = true;
+        }, 150); // Shortened duration since there's no button movement
+      }
     }
   }
 
@@ -237,23 +270,32 @@
     const button = event.currentTarget as HTMLButtonElement;
     const wasActive = activeSubApp === subApp.id;
 
+    // Don't do anything if this is already the active button
+    if (wasActive) return;
+
     // Add click animation class
     button.classList.add("clicked");
 
-    // Remove the class after animation completes
+    // Remove the class after animation completes, THEN update active state
     setTimeout(() => {
       button.classList.remove("clicked");
 
-      // If this button just became active, add celebration animation
-      if (!wasActive && activeSubApp === subApp.id) {
-        button.classList.add("newly-active");
-        setTimeout(() => {
-          button.classList.remove("newly-active");
-        }, 800);
-      }
-    }, 600);
+      // NOW update the active state - this causes the button to move to primary position
+      activeSubApp = subApp.id;
 
-    activeSubApp = subApp.id;
+      // Add celebration animation to the newly active button (now in primary position)
+      setTimeout(() => {
+        const newPrimaryButton = document.querySelector(
+          ".context-switcher-button.active",
+        );
+        if (newPrimaryButton) {
+          newPrimaryButton.classList.add("newly-active");
+          setTimeout(() => {
+            newPrimaryButton.classList.remove("newly-active");
+          }, 800);
+        }
+      }, 100); // Small delay to ensure DOM update
+    }, 600);
 
     // Keep the menu open for half a second after selection, then close directly
     isDelayedClosing = true;
@@ -269,81 +311,99 @@
 </script>
 
 <div class="context-switcher">
-  <div
-    class="context-switcher-container"
-    class:expanded={isExpanded}
-    class:repositioning={isRepositioning}
-    class:delayed-closing={isDelayedClosing}
-    on:mouseenter={handleContainerMouseEnter}
-    on:mouseleave={handleContainerMouseLeave}
-    role="tablist"
-    tabindex="0"
-    aria-label="Sub-application navigator"
-  >
-    {#if isExpanded || isDelayedClosing}
-      <!-- Show all buttons when fully expanded or in delayed closing -->
-      {#each subApps as subApp, index}
+  <!-- Wrapper to serve as positioning reference -->
+  <div class="context-switcher-wrapper">
+    <!-- Spacer to maintain layout space when expanded -->
+    {#if isExpanded || isDelayedClosing || isRepositioning}
+      <div class="context-switcher-spacer">
+        <!-- Invisible placeholder that maintains the space of the collapsed button -->
+        <div class="context-switcher-spacer-content">
+          <i class="bi bi-{activeSubAppObj.icon}" aria-hidden="true"></i>
+          <span class="context-switcher-label">{activeSubAppObj.label}</span>
+        </div>
+      </div>
+    {/if}
+
+    <div
+      class="context-switcher-container"
+      class:expanded={isExpanded}
+      class:repositioning={isRepositioning}
+      class:delayed-closing={isDelayedClosing}
+      on:mouseenter={handleContainerMouseEnter}
+      on:mouseleave={handleContainerMouseLeave}
+      role="tablist"
+      tabindex="0"
+      aria-label="Sub-application navigator"
+    >
+      {#if isExpanded || isDelayedClosing}
+        <!-- Show all buttons when fully expanded or in delayed closing -->
+        <!-- Active button first, then all others -->
         <button
-          class="context-switcher-button"
-          class:active={activeSubApp === subApp.id}
-          class:delayed-appear={index !== activeIndex && !isDelayedClosing}
-          data-color={subApp.color}
-          style="--button-color: {subApp.color}; --appear-delay: {(index <
-          activeIndex
-            ? index
-            : index - 1) * 50}ms;"
-          on:click={(event) => handleSubAppClick(subApp, event)}
-          title={subApp.label}
-          aria-label={`Switch to ${subApp.label}`}
+          class="context-switcher-button active"
+          data-color={activeSubAppObj.color}
+          style="--button-color: {activeSubAppObj.color}; --appear-delay: 0ms;"
+          on:click={(event) => handleSubAppClick(activeSubAppObj, event)}
+          title={activeSubAppObj.label}
+          aria-label={`Current: ${activeSubAppObj.label}`}
           role="tab"
-          aria-selected={activeSubApp === subApp.id}
+          aria-selected="true"
         >
-          <i class="bi bi-{subApp.icon}" aria-hidden="true"></i>
-          <span class="context-switcher-label">{subApp.label}</span>
+          <i class="bi bi-{activeSubAppObj.icon}" aria-hidden="true"></i>
+          <span class="context-switcher-label">{activeSubAppObj.label}</span>
         </button>
-      {/each}
-    {:else if isRepositioning}
-      <!-- Show repositioning state: active button sliding to its position -->
-      {#each subApps as subApp, index}
-        {#if activeSubApp === subApp.id}
+
+        <!-- Then show all other (non-active) buttons -->
+        {#each subApps.filter((app) => app.id !== activeSubApp) as subApp, index}
           <button
-            class="context-switcher-button active repositioning-active"
+            class="context-switcher-button"
+            class:delayed-appear={!isDelayedClosing}
             data-color={subApp.color}
-            style="--button-color: {subApp.color}; --target-position: {index *
-              3}rem;"
+            style="--button-color: {subApp.color}; --appear-delay: {(index +
+              1) *
+              50}ms;"
+            on:click={(event) => handleSubAppClick(subApp, event)}
             title={subApp.label}
-            aria-label={`Current: ${subApp.label}`}
+            aria-label={`Switch to ${subApp.label}`}
             role="tab"
-            aria-selected="true"
+            aria-selected="false"
           >
             <i class="bi bi-{subApp.icon}" aria-hidden="true"></i>
             <span class="context-switcher-label">{subApp.label}</span>
           </button>
-        {:else}
-          <!-- Placeholder buttons to maintain spacing during repositioning -->
-          <div
-            class="context-switcher-placeholder"
-            style="--placeholder-delay: {Math.abs(index - activeIndex) * 20}ms;"
-          ></div>
-        {/if}
-      {/each}
-    {:else}
-      <!-- Show only active button when collapsed -->
-      <button
-        class="context-switcher-button active"
-        class:sparkler-active={sparklerActive}
-        data-color={activeSubAppObj.color}
-        style="--button-color: {activeSubAppObj.color};"
-        title={`${activeSubAppObj.label} - Hover to expand`}
-        aria-label={`Current: ${activeSubAppObj.label}. Hover to expand menu`}
-        role="tab"
-        aria-selected="true"
-      >
-        <i class="bi bi-{activeSubAppObj.icon}" aria-hidden="true"></i>
-        <span class="context-switcher-label">{activeSubAppObj.label}</span>
-      </button>
-    {/if}
+        {/each}
+      {:else if isRepositioning}
+        <!-- Show repositioning state: active button stays in place, preparing for expansion -->
+        <button
+          class="context-switcher-button active"
+          data-color={activeSubAppObj.color}
+          style="--button-color: {activeSubAppObj.color};"
+          title={activeSubAppObj.label}
+          aria-label={`Current: ${activeSubAppObj.label}`}
+          role="tab"
+          aria-selected="true"
+        >
+          <i class="bi bi-{activeSubAppObj.icon}" aria-hidden="true"></i>
+          <span class="context-switcher-label">{activeSubAppObj.label}</span>
+        </button>
+      {:else}
+        <!-- Show only active button when collapsed -->
+        <button
+          class="context-switcher-button active"
+          class:sparkler-active={sparklerActive}
+          data-color={activeSubAppObj.color}
+          style="--button-color: {activeSubAppObj.color};"
+          title={`${activeSubAppObj.label} - Hover to expand`}
+          aria-label={`Current: ${activeSubAppObj.label}. Hover to expand menu`}
+          role="tab"
+          aria-selected="true"
+        >
+          <i class="bi bi-{activeSubAppObj.icon}" aria-hidden="true"></i>
+          <span class="context-switcher-label">{activeSubAppObj.label}</span>
+        </button>
+      {/if}
+    </div>
   </div>
+  <!-- Close wrapper -->
 </div>
 
 <style>
@@ -356,6 +416,52 @@
     z-index: 1000;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    overflow: visible; /* Ensure the parent container doesn't clip the overlay */
+    width: 100%; /* Full width to contain children */
+  }
+
+  /* Wrapper for positioning reference and boundary constraints */
+  .context-switcher-wrapper {
+    position: relative; /* Creates positioning context for absolute children */
+    width: fit-content; /* Only as wide as collapsed content */
+    min-width: fit-content;
+    /* Explicitly match the collapsed button height including all spacing */
+    height: fit-content;
+    min-height: fit-content;
+  }
+
+  /* Spacer to maintain layout space when expanded */
+  .context-switcher-spacer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.25rem;
+    margin: 0;
+    width: fit-content;
+    min-width: fit-content;
+    border-radius: 8px;
+    padding: 0.5rem;
+    opacity: 0; /* Invisible but maintains space */
+    pointer-events: none; /* Don't interfere with interactions */
+  }
+
+  .context-switcher-spacer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 3rem; /* Same as context-switcher-button */
+    height: 3rem; /* Same as context-switcher-button */
+    border-radius: 0.5rem;
+    padding: 0.375rem;
+    position: relative;
+    flex-shrink: 0; /* Same as button */
+    /* Invisible placeholder that exactly matches button dimensions */
+  }
+
+  .context-switcher-spacer-content i,
+  .context-switcher-spacer-content .context-switcher-label {
+    opacity: 0; /* Make content invisible but maintain layout space */
   }
 
   .context-switcher-container {
@@ -366,69 +472,88 @@
     max-width: 1200px;
     margin: 0;
     flex-wrap: nowrap;
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition:
+      all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+      background-color 0.4s ease,
+      backdrop-filter 0.4s ease,
+      box-shadow 0.4s ease,
+      padding 0.4s ease;
     overflow: visible;
     position: relative;
     width: fit-content;
+    min-width: fit-content;
+    border-radius: 8px;
+    padding: 0.5rem;
   }
 
-  /* Expanded state */
+  /* Expanded state - constrained to wrapper's top/bottom/left, extends right */
   .context-switcher-container.expanded {
+    position: absolute;
+    /* Align exactly to wrapper edges - no offset compensation */
+    top: var(--expand-top, 0px);
+    left: var(--expand-left, 0px);
+    /* Match wrapper height exactly */
+    height: 100%; /* Fill wrapper height completely */
+    z-index: 2000; /* Above all other elements */
     gap: 0.5rem;
-    width: auto;
+    width: max-content; /* Extend right as needed */
+    min-width: 100%; /* At minimum, match wrapper width */
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    padding: 0.5rem; /* Reduced padding to match collapsed state */
+    /* Remove any margin that could offset positioning */
+    margin: 0;
+    /* Ensure content aligns to wrapper boundaries */
+    box-sizing: border-box;
   }
 
-  /* Repositioning state */
+  /* Repositioning state - brief intermediate positioning aligned to wrapper */
   .context-switcher-container.repositioning {
+    position: absolute;
+    top: var(--reposition-top, 0px); /* Align to wrapper top */
+    left: var(--reposition-left, 0px); /* Align to wrapper left */
+    height: 100%; /* Match wrapper height */
+    z-index: 2000; /* Above all other elements */
     gap: 0.5rem;
-    width: auto;
+    width: max-content;
+    min-width: 100%; /* At minimum, match wrapper width */
     overflow: visible;
+    background-color: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    padding: 0.5rem; /* Match collapsed padding */
+    margin: 0;
+    box-sizing: border-box;
   }
 
-  /* Delayed closing state */
+  /* Delayed closing state - maintains wrapper-aligned expanded position */
   .context-switcher-container.delayed-closing {
+    position: absolute;
+    top: var(--expand-top, 0px); /* Align to wrapper top */
+    left: var(--expand-left, 0px); /* Align to wrapper left */
+    height: 100%; /* Match wrapper height */
+    z-index: 2000; /* Above all other elements */
     gap: 0.5rem;
-    width: auto;
+    width: max-content;
+    min-width: 100%; /* At minimum, match wrapper width */
     overflow: visible;
-  }
-
-  /* Placeholder elements during repositioning */
-  .context-switcher-placeholder {
-    width: 3rem;
-    height: 3rem;
-    opacity: 0;
-    transition: opacity 0.1s ease;
-    animation: placeholderAppear 0.15s ease forwards;
-    animation-delay: var(--placeholder-delay, 0ms);
-  }
-
-  @keyframes placeholderAppear {
-    to {
-      opacity: 0.1;
-    }
-  }
-
-  /* Repositioning animation for active button */
-  .context-switcher-button.repositioning-active {
-    position: relative;
-    animation: slideToPosition 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)
-      forwards;
-  }
-
-  @keyframes slideToPosition {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(var(--target-position, 0));
-    }
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    padding: 0.5rem; /* Match expanded state padding */
+    margin: 0;
+    box-sizing: border-box;
   }
 
   /* Smooth transitions for buttons appearing/disappearing */
   .context-switcher-button {
     opacity: 1;
     transform: scale(1);
-    transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    flex-shrink: 0; /* Prevent buttons from shrinking */
   }
 
   /* Animation for non-active buttons when expanding - delayed appearance */
@@ -458,7 +583,7 @@
     justify-content: center;
     width: 3rem; /* Increased from 2rem to give more space for text */
     height: 3rem; /* Increased from 2rem to give more space for text */
-    background: var(--color-bg-tertiary, #21262d);
+    background: rgba(64, 64, 64, 1);
     border: 1px solid var(--color-border-muted, #21262d);
     border-radius: 0.5rem;
     cursor: pointer;
@@ -466,6 +591,7 @@
     text-decoration: none;
     position: relative;
     overflow: visible; /* Changed from hidden to visible to prevent text cutoff */
+    flex-shrink: 0; /* Prevent buttons from shrinking */
 
     /* Default state: grayscale and muted */
     color: var(--color-text-secondary, #7d8590);
@@ -474,11 +600,11 @@
 
   /* Hover state: vibrant colors with smooth transition */
   .context-switcher-button:hover {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(96, 96, 96, 1); /* Darker gray background on hover */
     border-color: var(--button-color);
     color: var(--button-color);
     filter: grayscale(0) brightness(1.1);
-    transform: translateY(-2px);
+    /* Removed translateY to keep button in exact same position */
     box-shadow:
       0 8px 25px rgba(0, 0, 0, 0.4),
       0 0 20px var(--button-color);
@@ -523,11 +649,16 @@
   /* Active button hover: even more enhanced */
   .context-switcher-button.active:hover {
     /* Fallback */
-    background: var(--color-bg-tertiary, #21262d);
+    background: rgba(
+      96,
+      96,
+      96,
+      1
+    ) !important; /* Lighter gray on hover for active */
     border-color: var(--button-color);
     color: var(--button-color);
     filter: grayscale(0) brightness(1.3);
-    transform: translateY(-3px);
+    /* Removed translateY to keep button in exact same position */
     box-shadow:
       0 0 0 2px var(--button-color),
       0 12px 30px rgba(0, 0, 0, 0.5),
@@ -537,11 +668,12 @@
   /* Enhanced with color-mix support */
   @supports (background: color-mix(in srgb, red, blue)) {
     .context-switcher-button.active:hover {
-      background: color-mix(
-        in srgb,
-        var(--button-color) 20%,
-        var(--color-bg-tertiary, #21262d)
-      );
+      background: rgba(
+        96,
+        96,
+        96,
+        1
+      ) !important; /* Override with lighter gray on hover */
       box-shadow:
         0 0 0 2px color-mix(in srgb, var(--button-color) 40%, transparent),
         0 12px 30px rgba(0, 0, 0, 0.5),
@@ -552,7 +684,7 @@
 
   /* Click animation */
   .context-switcher-button:active {
-    transform: translateY(-1px);
+    /* Removed translateY to keep button in exact same position */
     transition: all 0.1s ease;
   }
 
