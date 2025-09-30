@@ -1,44 +1,71 @@
 <script lang="ts">
   import type { LayoutData } from "./$types";
   import { ContextSwitcher } from "$lib/components/context_switcher";
+  import { Sidebar } from "$lib/components/sidebar";
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
+  import { browser } from "$app/environment";
+  import { onMount } from "svelte";
 
   export let data: LayoutData;
 
   // Type-safe access to our custom properties
   const layoutData = data as any; // Cast to any to access our custom properties
 
-  // Context switcher logic
-  $: currentSubApp = determineActiveSubApp($page.url.pathname);
+  // Prevent hydration flicker by stabilizing initial values
+  let mounted = false;
+  let currentSubApp = "discover"; // Default value to prevent flicker
+  let showSidebar = true; // Default to true for non-dashboard pages
+
+  // Update values once component is mounted to prevent hydration blinking
+  onMount(() => {
+    mounted = true;
+    currentSubApp = determineActiveSubApp($page.url.pathname);
+    showSidebar = !$page.url.pathname.includes("/dashboard");
+  });
+
+  // Only use reactive statements after mounting to prevent blinking
+  $: if (mounted && browser) {
+    currentSubApp = determineActiveSubApp($page.url.pathname);
+    showSidebar = !$page.url.pathname.includes("/dashboard");
+  }
 
   // Sparkler effect disabled by default - can be enabled via enableSparkler prop
   let hasNewAccess = false; // Set to true to show sparkler effect (when enabled)
 
   function determineActiveSubApp(pathname: string): string {
     // Extract sub-app from URL path
-    // Examples: /dashboard -> 'discover', /dashboard/qualify -> 'qualify'
+    // Examples: /dashboard -> 'discover', /discover -> 'discover', /nurture -> 'nurture'
     const pathSegments = pathname.split("/").filter(Boolean);
 
-    if (pathSegments.length > 1) {
-      // Check if the second segment matches a known sub-app
-      const subApp = pathSegments[1];
-      const validSubApps = [
-        "discover",
-        "qualify",
-        "nurture",
-        "commit",
-        "onboard",
-        "support",
-        "expand",
-        "renew",
-        "advocate",
-      ];
-      return validSubApps.includes(subApp) ? subApp : "discover";
+    const validSubApps = [
+      "discover",
+      "qualify",
+      "nurture",
+      "commit",
+      "onboard",
+      "support",
+      "expand",
+      "renew",
+      "advocate",
+    ];
+
+    // Check direct sub-app routes first (e.g., /discover, /nurture)
+    if (pathSegments.length >= 1) {
+      const firstSegment = pathSegments[0];
+      if (validSubApps.includes(firstSegment)) {
+        return firstSegment;
+      }
+
+      // Check dashboard sub-routes (e.g., /dashboard/qualify)
+      if (firstSegment === "dashboard" && pathSegments.length > 1) {
+        const subApp = pathSegments[1];
+        return validSubApps.includes(subApp) ? subApp : "discover";
+      }
     }
 
-    // Default to 'nurture' to demonstrate sparkler effect
-    return "nurture";
+    // Default to 'discover' for unknown routes
+    return "discover";
   }
 
   function handleSubAppChange(event: CustomEvent) {
@@ -102,18 +129,72 @@
     </div>
   </div>
 {:else}
-  <!-- PROTECTED CONTENT - Context Switcher and child pages -->
-  <ContextSwitcher
-    activeSubApp={currentSubApp}
-    {hasNewAccess}
-    sparkleIntensity="medium"
-    enableSparkler={false}
-    on:subAppChange={handleSubAppChange}
-  />
-  <slot />
+  <!-- PROTECTED CONTENT -->
+  <div class="layout-container" class:mounted>
+    {#if showSidebar}
+      <!-- Sidebar Layout for non-dashboard pages -->
+      <Sidebar
+        activeSubApp={currentSubApp}
+        {hasNewAccess}
+        sparkleIntensity="medium"
+        enableSparkler={false}
+      />
+      <main class="main-content-with-sidebar">
+        <slot />
+      </main>
+    {:else}
+      <!-- Dashboard Layout with standalone Context Switcher -->
+      <ContextSwitcher
+        activeSubApp={currentSubApp}
+        {hasNewAccess}
+        sparkleIntensity="medium"
+        enableSparkler={false}
+        on:subAppChange={handleSubAppChange}
+      />
+      <main class="main-content-full-width">
+        <slot />
+      </main>
+    {/if}
+  </div>
 {/if}
 
 <style>
+  /* Main content layouts */
+  .main-content-with-sidebar {
+    margin-left: 280px; /* Match sidebar width */
+    min-height: 100vh;
+    position: relative;
+    /* z-index removed to prevent stacking context conflicts with context switcher */
+    opacity: 1;
+    transition: opacity 0.15s ease-in-out;
+  }
+
+  .main-content-full-width {
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+    /* z-index removed to prevent stacking context conflicts with context switcher */
+    opacity: 1;
+    transition: opacity 0.15s ease-in-out;
+  }
+
+  /* Prevent layout shift during hydration */
+  .layout-container {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  .layout-container.mounted {
+    opacity: 1;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .main-content-with-sidebar {
+      margin-left: 0; /* Remove sidebar margin on mobile */
+    }
+  }
+
   /* Blackout screen styling (same as workspace) */
   .blackout-screen {
     position: fixed;
@@ -132,7 +213,7 @@
   /* Ensure content doesn't hide behind sticky context switcher */
   :global(main) {
     position: relative;
-    z-index: 1;
+    /* z-index removed to prevent stacking context conflicts with context switcher */
   }
 
   .access-denied-container {

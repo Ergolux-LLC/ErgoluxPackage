@@ -1,3 +1,13 @@
+/* Remove browser default blue focus ring from all anchors */
+a:focus, a:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+/* Remove all blue link colors globally */
+a, a:visited, a:active {
+  color: inherit !important;
+  text-decoration: none !important;
+}
 /* Global dark mode styles */
 html, body {
   background-color: #121212;
@@ -5,6 +15,12 @@ html, body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+/* Ensure no Bootstrap interference with full viewport layouts */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 /* DialogEngine component overrides for dark mode */
@@ -86,3 +102,4 @@ html, body {
 :global(button.primary:hover) {
   background: #254b93;
 }
+
