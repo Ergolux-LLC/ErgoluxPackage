@@ -48,6 +48,7 @@
       "expand",
       "renew",
       "advocate",
+      "plan",
     ];
 
     // Check direct sub-app routes first (e.g., /discover, /nurture)
