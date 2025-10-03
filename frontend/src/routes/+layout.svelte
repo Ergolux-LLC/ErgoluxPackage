@@ -14,7 +14,19 @@
   let { children, data } = $props();
 
   onMount(async () => {
-    memoryManager.initialize();
+    try {
+      const maybePromise: any = memoryManager.initialize();
+      if (maybePromise && typeof maybePromise.then === "function") {
+        await maybePromise;
+      }
+    } catch (e) {
+      // initialization error should not block showing UI; continue
+    }
+
+    // reveal body now that initialization is done to avoid FOUC
+    try {
+      document.body.style.visibility = "visible";
+    } catch (e) {}
 
     if (typeof window !== "undefined" && (window as any).bootstrap) {
       devLog("Bootstrap loaded successfully from CDN");

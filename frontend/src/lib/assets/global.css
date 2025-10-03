@@ -18,6 +18,9 @@ html, body {
   box-sizing: border-box;
 }
 
+/* Prevent flashes of unstyled content: keep body hidden until app is ready */
+body { visibility: hidden; }
+
 /* Ensure no Bootstrap interference with full viewport layouts */
 *, *::before, *::after {
   box-sizing: border-box;
