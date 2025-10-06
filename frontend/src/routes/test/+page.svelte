@@ -1,5 +1,6 @@
 <script lang="ts">
   import { message } from "$lib/components/testcomponent/test.js";
+  import { message as message2 } from "$lib/components/testcomponent2/test.js";
   import { onMount, onDestroy } from "svelte";
   import "gridstack/dist/gridstack.min.css";
   import type { GridStack as GridStackType } from "gridstack";
@@ -58,42 +59,32 @@
         cellHeight: 80,
         margin: 8,
         animate: true,
-        draggable: { handle: ".grid-stack-item-content" },
-        resizable: { handles: "se, sw" },
       };
 
       if (!mounted) return;
       grid = GridStack.init(options, gridEl!);
 
-      try {
-        if (typeof (grid as any).setStatic === "function")
-          (grid as any).setStatic(!editMode);
-        if (typeof (grid as any).enableMove === "function")
-          (grid as any).enableMove(editMode);
-        if (typeof (grid as any).enableResize === "function")
-          (grid as any).enableResize(editMode);
-      } catch (e) {
-        /* ignore */
-      }
-
-      (grid as any).renderCB = (el: HTMLElement, w: any) => {
+      // V11+ renderCB: use componentKey to inject live component output (do NOT rely on saved content)
+      // Must set on the GridStack class so v11 calls it when creating widget divs
+      (GridStack as any).renderCB = (el: HTMLElement, w: any) => {
         while (el.firstChild) el.removeChild(el.firstChild);
-
-        const payload = w && (w.content ?? w.contentText ?? "");
 
         const content = document.createElement("div");
         content.className = "grid-stack-item-content";
 
-        if (payload instanceof Node) {
-          content.appendChild(payload.cloneNode(true));
-        } else if (typeof payload === "string") {
-          if (/<[a-z][\s\S]*>/i.test(payload)) {
+        // Prefer dynamic component rendering by componentKey
+        if (w && w.componentKey === "testcomponent") {
+          content.innerHTML = message;
+        } else if (w && w.componentKey === "testcomponent2") {
+          content.innerHTML = message2;
+        } else {
+          // fallback: use contentText or content if present (but we do NOT persist content)
+          const payload = w && (w.contentText ?? w.content ?? "");
+          if (typeof payload === "string" && /<[a-z][\s\S]*>/i.test(payload)) {
             content.innerHTML = payload;
           } else {
-            content.textContent = payload;
+            content.textContent = payload ?? "";
           }
-        } else {
-          content.textContent = payload == null ? "" : String(payload);
         }
 
         el.appendChild(content);
@@ -104,29 +95,39 @@
       if (raw) {
         try {
           const layout = JSON.parse(raw);
-          // prefer load API
+          if (typeof (grid as any).removeAll === "function")
+            (grid as any).removeAll();
+          // load expects widget objects; our saved layout contains only layout metadata + componentKey
           if (typeof (grid as any).load === "function") {
-            if (typeof (grid as any).removeAll === "function")
-              (grid as any).removeAll();
             (grid as any).load(layout);
+            return;
           } else {
-            // fallback: iterate widgets (v11 expects widget objects)
+            // fallback: add each widget object via addWidget (v11 expects widget objects)
             (layout as any[]).forEach((w: any) => {
               if (typeof (grid as any).addWidget === "function")
                 (grid as any).addWidget(w);
             });
+            return;
           }
-          // layout restored — skip adding defaults
-          return;
         } catch (e) {
           console.error("failed to load saved grid layout", e);
           // fall through to add defaults
         }
       }
 
-      // no saved layout -> add defaults
-      const widget1 = { w: 3, h: 1, content: message };
-      const widget2 = { w: 3, h: 1, content: "another longer widget!" };
+      // no saved layout -> add defaults (use componentKey, do NOT include actual content)
+      const widget1 = {
+        w: 3,
+        h: 1,
+        componentKey: "testcomponent",
+        id: "item-1",
+      };
+      const widget2 = {
+        w: 3,
+        h: 1,
+        componentKey: "testcomponent2",
+        id: "item-2",
+      };
 
       (grid as any).addWidget(widget1);
       (grid as any).addWidget(widget2);
@@ -155,12 +156,23 @@
     saveStatus = "saving";
     verified = null;
     try {
-      // use modern API
-      const layout = (grid as any).save();
-      const json = JSON.stringify(layout);
+      // get full layout from GridStack
+      const fullLayout = (grid as any).save();
+
+      // strip any runtime content before persisting — keep only positional metadata + componentKey + id
+      const stripped = (fullLayout as any[]).map((w: any) => ({
+        id: w.id ?? (w.el && w.el.dataset && w.el.dataset.id) ?? undefined,
+        x: w.x,
+        y: w.y,
+        w: w.w,
+        h: w.h,
+        componentKey: w.componentKey ?? w.contentKey ?? undefined,
+      }));
+
+      const json = JSON.stringify(stripped);
       localStorage.setItem("grid-layout", json);
 
-      // verification: read back and compare string forms
+      // verification: read back and compare normalized JSON
       const readRaw = localStorage.getItem("grid-layout");
       if (readRaw == null) {
         saveStatus = "error";
@@ -169,19 +181,16 @@
         return;
       }
 
-      // basic verification by comparing JSON normalized strings
       const parsedRead = JSON.parse(readRaw);
-      const parsedOriginal = JSON.parse(json);
       const same =
-        JSON.stringify(parsedRead) === JSON.stringify(parsedOriginal);
+        JSON.stringify(parsedRead) === JSON.stringify(JSON.parse(json));
 
       if (same) {
         saveStatus = "saved";
         verified = true;
         lastSaved = new Date().toLocaleString();
-        // small preview to display in UI (truncate to avoid huge content)
         savedPreview =
-          JSON.stringify(parsedOriginal, null, 2).slice(0, 200) +
+          JSON.stringify(parsedRead, null, 2).slice(0, 200) +
           (json.length > 200 ? "…" : "");
       } else {
         saveStatus = "error";
@@ -194,7 +203,6 @@
       verified = false;
       savedPreview = null;
     } finally {
-      // reset status indicator after a short delay so UI doesn't stay in "saved" forever
       setTimeout(() => {
         if (saveStatus === "saved" || saveStatus === "error")
           saveStatus = "idle";
@@ -208,9 +216,17 @@
     if (!raw) return;
     try {
       const layout = JSON.parse(raw);
-      (grid as any).removeAll();
-      (grid as any).load(layout);
-      // show quick confirmation
+      if (typeof (grid as any).removeAll === "function")
+        (grid as any).removeAll();
+      // load the metadata-only layout; renderCB will inject live testcomponent output
+      if (typeof (grid as any).load === "function") {
+        (grid as any).load(layout);
+      } else {
+        (layout as any[]).forEach((w: any) => {
+          if (typeof (grid as any).addWidget === "function")
+            (grid as any).addWidget(w);
+        });
+      }
       lastSaved = new Date().toLocaleTimeString();
     } catch (e) {
       console.error("loadLayout error:", e);
