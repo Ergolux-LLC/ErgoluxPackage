@@ -24,8 +24,8 @@
   let selectedId: string | null = null;
   // show/hide the visible trigger inside the portal after a selection
   let showTrigger = true;
-  // menu open/closed state (start open on page load, can still be toggled/closed)
-  let menuOpen = true;
+  // menu open/closed state (start collapsed on page load, can still be toggled/opened)
+  let menuOpen = false;
 
   // logging flag
   const LOG = true;

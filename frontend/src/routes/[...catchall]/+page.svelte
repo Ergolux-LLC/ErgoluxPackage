@@ -327,8 +327,8 @@
   function ensureLowHealthAudio() {
     if (_lowHealthAudio) return _lowHealthAudio;
     try {
-      const a = new Audio('/sounds/low-health.mp3');
-      a.preload = 'auto';
+      const a = new Audio("/sounds/low-health.mp3");
+      a.preload = "auto";
       a.loop = true;
       _lowHealthAudio = a;
     } catch (e) {
@@ -343,18 +343,20 @@
     const pct = ($playerHP / PLAYER_MAX_HP) * 100;
     if (playerHPWrapEl) {
       if (pct <= 20) {
-        playerHPWrapEl.classList.add('player-hp-low');
+        playerHPWrapEl.classList.add("player-hp-low");
         try {
           const a = ensureLowHealthAudio();
           if (a) a.play().catch(() => {});
         } catch (e) {}
       } else {
-        playerHPWrapEl.classList.remove('player-hp-low');
+        playerHPWrapEl.classList.remove("player-hp-low");
         try {
           const a = ensureLowHealthAudio();
           if (a) {
             a.pause();
-            try { a.currentTime = 0; } catch (e) {}
+            try {
+              a.currentTime = 0;
+            } catch (e) {}
           }
         } catch (e) {}
       }
@@ -1276,14 +1278,26 @@
   }
   /* low health flashing */
   @keyframes hpFlash {
-    0% { box-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 0 6px rgba(255,0,0,0.0); }
-    50% { box-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 0 14px rgba(255,0,0,0.85); }
-    100% { box-shadow: 0 2px 6px rgba(0,0,0,0.5), 0 0 6px rgba(255,0,0,0.0); }
+    0% {
+      box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.5),
+        0 0 6px rgba(255, 0, 0, 0);
+    }
+    50% {
+      box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.5),
+        0 0 14px rgba(255, 0, 0, 0.85);
+    }
+    100% {
+      box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.5),
+        0 0 6px rgba(255, 0, 0, 0);
+    }
   }
   :global(.player-hp-low) .player-hp-bar {
     animation: hpFlash 800ms linear infinite;
   }
   :global(.player-hp-low) .player-hp-fill {
-    background: linear-gradient(90deg,#ff6b6b,#ff3b3b) !important;
+    background: linear-gradient(90deg, #ff6b6b, #ff3b3b) !important;
   }
 </style>
